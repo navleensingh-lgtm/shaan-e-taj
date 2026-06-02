@@ -2,28 +2,31 @@
 
 Current site is on **Wix**. This project replaces it with your full Next.js store.
 
-## 1. GitHub — use Navleen account only
+## 1. GitHub
 
-Right now `gh` is logged in as **workpuneetkumar-sketch**. Switch to **navleen**:
+**Code is pushed (private):**  
+https://github.com/workpuneetkumar-sketch/shaan-e-taj
+
+### Move repo to Navleen (required)
 
 ```powershell
 gh auth login
-# Browser → login as Navleen → authorize
+# Login as GitHub user: navleen
 
 gh auth switch -u navleen
 gh auth setup-git
 ```
 
-Create **one private** repo and push:
+On GitHub: **shaan-e-taj** → Settings → **Transfer ownership** → `navleen`
 
-```powershell
-cd C:\Users\Puneet\Projects\shaan-e-taj
-git add .
-git commit -m "Shaan-e-Taj production website"
-gh repo create shaan-e-taj --private --source=. --remote=origin --push
-```
+Or run: `powershell -File scripts/complete-setup.ps1` after Navleen login.
 
-Extra repos on the old Cursor account (`zyoris`, `zyoris-frontend`) should be deleted (see below).
+### Delete old repos (Cursor account)
+
+Open https://github.com/workpuneetkumar-sketch/zyoris/settings → Delete  
+Open https://github.com/workpuneetkumar-sketch/zyoris-frontend/settings → Delete  
+
+(CLI needs `gh auth refresh -h github.com -s delete_repo` in browser first.)
 
 ## 2. VPS (recommended — website + API + database)
 

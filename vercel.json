@@ -3,5 +3,10 @@
   "installCommand": "npm install --include=optional",
   "buildCommand": "npm run build -w @shaan-e-taj/database && npm run build -w @shaan-e-taj/web",
   "framework": "nextjs",
-  "outputDirectory": "apps/web/.next"
+  "outputDirectory": "apps/web/.next",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  }
 }

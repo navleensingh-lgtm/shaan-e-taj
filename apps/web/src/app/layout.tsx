@@ -19,9 +19,17 @@ const jost = Jost({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://shaanetaj.com"
+  ),
   title: "Shaan-e-Taj | Luxury Indian Couture",
   description:
     "Hand-embroidered bridal, party wear & festive couture. Custom stitching. Pan India shipping.",
+  openGraph: {
+    siteName: "Shaan-e-Taj",
+    locale: "en_IN",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

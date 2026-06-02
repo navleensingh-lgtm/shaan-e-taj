@@ -2,6 +2,17 @@
 
 Current site is on **Wix**. This project replaces it with your full Next.js store.
 
+## Fast path: Git → Vercel → shaanetaj.com
+
+Use **work.navleensingh@gmail.com** on Vercel, import GitHub repo, add domain.
+
+**Full click-by-click guide:** [docs/VERCEL-SHAANETAJ.md](docs/VERCEL-SHAANETAJ.md)
+
+1. https://vercel.com → login **work.navleensingh@gmail.com**
+2. Import **navleensingh-lgtm/shaan-e-taj**
+3. Add domains **shaanetaj.com** + **www**
+4. Point DNS at registrar to Vercel (remove Wix DNS)
+
 ## 1. GitHub
 
 **Code is pushed (private):**  

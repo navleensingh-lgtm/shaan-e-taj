@@ -1,0 +1,4 @@
+deploy/
+apps/api/
+apps/telegram-bot/
+node_modules/

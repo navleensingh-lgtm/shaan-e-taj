@@ -10,20 +10,39 @@ async function main() {
     update: {},
   });
 
-  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@shaanetaj.com";
+  const adminEmail = (process.env.ADMIN_EMAIL ?? "admin@shaanetaj.com").toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD ?? "admin123";
   const hash = await bcrypt.hash(adminPassword, 12);
 
-  await prisma.user.upsert({
-    where: { email: adminEmail },
-    create: {
-      email: adminEmail,
-      name: "Shaan-e-Taj Admin",
-      passwordHash: hash,
-      role: UserRole.ADMIN,
+  const existing = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { email: { equals: adminEmail, mode: "insensitive" } },
+        { email: "admin@shaanetaj.com" },
+      ],
     },
-    update: { passwordHash: hash, role: UserRole.ADMIN },
   });
+
+  if (existing) {
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        email: adminEmail,
+        name: "Shaan-e-Taj Admin",
+        passwordHash: hash,
+        role: UserRole.ADMIN,
+      },
+    });
+  } else {
+    await prisma.user.create({
+      data: {
+        email: adminEmail,
+        name: "Shaan-e-Taj Admin",
+        passwordHash: hash,
+        role: UserRole.ADMIN,
+      },
+    });
+  }
 
   const samples = [
     {

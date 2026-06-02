@@ -13,3 +13,5 @@ coverage/
 prisma/migrations/**/migration_lock.toml
 **/dev.db
 packages/packages/
+
+.vercel

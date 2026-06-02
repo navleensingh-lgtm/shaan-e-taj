@@ -48,9 +48,11 @@ function LoginForm() {
         callbackUrl: params.get("callbackUrl") ?? "/",
       });
       if (result?.error) {
-        throw new Error(
-          "Login failed. Use lowercase email: navleensingh05@gmail.com — or try again in 2 min after site update."
-        );
+        const hint =
+          result.error === "CredentialsSignin"
+            ? "Wrong email or password. Use navleensingh05@gmail.com (all lowercase) and your account password."
+            : `Sign-in error (${result.error}). If the site was just updated, wait 2 minutes and try again.`;
+        throw new Error(hint);
       }
       router.push(params.get("callbackUrl") ?? "/admin");
       router.refresh();

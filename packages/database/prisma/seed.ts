@@ -24,6 +24,15 @@ async function main() {
   });
 
   if (existing) {
+    const conflict = await prisma.user.findFirst({
+      where: {
+        email: { equals: adminEmail, mode: "insensitive" },
+        NOT: { id: existing.id },
+      },
+    });
+    if (conflict) {
+      await prisma.user.delete({ where: { id: conflict.id } });
+    }
     await prisma.user.update({
       where: { id: existing.id },
       data: {

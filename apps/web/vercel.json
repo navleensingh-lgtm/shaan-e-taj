@@ -1,4 +1,4 @@
 {
-  "installCommand": "cd ../.. && npm install --include=optional",
-  "buildCommand": "cd ../.. && npm run build -w @shaan-e-taj/database && npm run build -w @shaan-e-taj/web"
+  "installCommand": "npm install --include=optional",
+  "buildCommand": "npm run build -w @shaan-e-taj/database && npm run build -w @shaan-e-taj/web"
 }

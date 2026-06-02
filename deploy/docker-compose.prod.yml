@@ -1,0 +1,59 @@
+# Production: shaanetaj.com + api.shaanetaj.com
+# Usage: copy .env to deploy/.env and run from repo root:
+#   docker compose -f deploy/docker-compose.prod.yml up -d --build
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shaanetaj
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: shaanetaj
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file: ../.env
+    environment:
+      DATABASE_URL: postgresql://shaanetaj:${POSTGRES_PASSWORD}@postgres:5432/shaanetaj
+      API_PORT: "4000"
+    depends_on:
+      - postgres
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+      args:
+        NEXT_PUBLIC_API_URL: https://api.shaanetaj.com
+        NEXT_PUBLIC_WHATSAPP_NUMBER: ${NEXT_PUBLIC_WHATSAPP_NUMBER}
+    restart: unless-stopped
+    env_file: ../.env
+    environment:
+      NEXTAUTH_URL: https://shaanetaj.com
+    depends_on:
+      - api
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - api
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

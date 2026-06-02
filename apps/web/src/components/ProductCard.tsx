@@ -1,0 +1,95 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { Product } from "@/lib/api";
+import { orderMessage, whatsAppUrl } from "@/lib/whatsapp";
+import { trackEvent } from "@/lib/api";
+import { useCart } from "@/context/CartContext";
+import { WishlistButton } from "./WishlistButton";
+
+type Props = { product: Product };
+
+export function ProductCard({ product }: Props) {
+  const { addItem } = useCart();
+  const router = useRouter();
+  const img = product.images.find((i) => i.isPrimary) ?? product.images[0];
+  const price = product.priceInPaise / 100;
+
+  function orderNow() {
+    addItem({
+      productId: product.id,
+      slug: product.slug,
+      name: product.name,
+      priceInPaise: product.priceInPaise,
+      imageUrl: img?.url,
+    });
+    router.push("/cart");
+  }
+
+  return (
+    <article className="group">
+      <Link href={`/product/${product.slug}`} className="block">
+        <div className="relative aspect-[3/4] overflow-hidden rounded bg-ivory-2">
+          {img?.url ? (
+            <Image
+              src={img.url}
+              alt={product.name}
+              fill
+              unoptimized={img.url.startsWith("data:")}
+              className="object-cover transition duration-500 group-hover:scale-[1.04]"
+              sizes="(max-width:768px) 50vw, 25vw"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-brand-subtle">
+              No image
+            </div>
+          )}
+          {product.badge && (
+            <span className="absolute left-3 top-3 bg-rose px-2.5 py-1 text-[10px] uppercase tracking-wider text-white">
+              {product.badge}
+            </span>
+          )}
+        </div>
+        <p className="mt-4 text-[10px] uppercase tracking-[0.2em] text-brand-subtle">
+          {product.subCategory.replace(/_/g, " ")}
+        </p>
+        <h3 className="serif mt-1 text-xl text-brand-text">{product.name}</h3>
+        <p className="mt-1 font-medium text-rose-dark">
+          ₹{price.toLocaleString("en-IN")}
+        </p>
+      </Link>
+      <div className="mt-3 flex flex-col gap-2">
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={orderNow}
+            className="flex flex-1 items-center justify-center rounded-sm bg-rose py-2.5 text-[11px] uppercase tracking-wider text-white"
+          >
+            Order Now
+          </button>
+          <WishlistButton productId={product.id} />
+        </div>
+        <a
+          href={whatsAppUrl(
+            orderMessage({
+              name: product.name,
+              category: product.mainCategory.replace(/_/g, " "),
+              price,
+              color: product.color,
+              fabric: product.fabric,
+            })
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => trackEvent("whatsapp_click", { productId: product.id })}
+          className="flex items-center justify-center gap-1.5 rounded-sm bg-[#25D366] py-2.5 text-[11px] uppercase tracking-wider text-white"
+        >
+          <span className="text-base leading-none">+</span>
+          Order on WhatsApp
+        </a>
+      </div>
+    </article>
+  );
+}

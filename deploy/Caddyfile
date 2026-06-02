@@ -1,0 +1,9 @@
+shaanetaj.com, www.shaanetaj.com {
+	encode gzip
+	reverse_proxy web:3000
+}
+
+api.shaanetaj.com {
+	encode gzip
+	reverse_proxy api:4000
+}

@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { ProductGrid } from "@/components/ProductGrid";
 import { HomeOrderCTA } from "@/components/HomeOrderCTA";
+import { YouTubeSection } from "@/components/YouTubeSection";
+import { SocialLinks } from "@/components/SocialLinks";
 import { fetchProducts } from "@/lib/api";
+import { siteConfig } from "@/lib/site-config";
 
 export default async function HomePage() {
   const { items } = await fetchProducts({ isNewArrival: "true", limit: "6" });
@@ -14,16 +17,17 @@ export default async function HomePage() {
         <div className="relative z-10 max-w-2xl text-center">
           <div className="mx-auto mb-5 h-px w-16 bg-gold" />
           <p className="text-[11px] uppercase tracking-[0.25em] text-rose">
-            Luxury Couture Since 2015
+            {siteConfig.legalName} · Luxury Couture Since {siteConfig.founded}
           </p>
           <h1 className="serif mt-5 text-5xl font-light leading-tight text-brand-text md:text-7xl">
-            Crafted for
+            {siteConfig.brand}
             <br />
-            <em className="text-rose-dark">Queens</em> Like You
+            <em className="text-rose-dark">Jalandhar</em>
           </h1>
           <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-brand-subtle">
-            Hand-embroidered bridal & festive wear, tailored to perfection. From our home to your heart.
+            {siteConfig.description}
           </p>
+          <SocialLinks className="mt-6 justify-center" />
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/new-arrivals"
@@ -52,6 +56,7 @@ export default async function HomePage() {
         <h2 className="serif mt-3 text-4xl text-brand-text md:text-5xl">New Arrivals</h2>
         <ProductGrid products={items} emptyMessage="Products coming soon — add via Telegram or Admin." />
         <HomeOrderCTA />
+        <YouTubeSection />
         <div className="mt-10 text-center">
           <Link
             href="/catalog"

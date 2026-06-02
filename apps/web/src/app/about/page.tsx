@@ -1,18 +1,37 @@
+import { siteConfig } from "@/lib/site-config";
+import { SocialLinks } from "@/components/SocialLinks";
+
 export default function AboutPage() {
   return (
     <section className="mx-auto max-w-4xl px-5 py-16 lg:px-8">
       <p className="text-[10px] uppercase tracking-[0.3em] text-rose">Our Heritage</p>
-      <h1 className="serif mt-3 text-4xl md:text-5xl">Our Story</h1>
+      <h1 className="serif mt-3 text-4xl md:text-5xl">About {siteConfig.brand}</h1>
+      <p className="mt-2 text-sm text-brand-subtle">{siteConfig.subtitle}</p>
+
       <div className="mt-8 space-y-5 text-[15px] leading-relaxed text-brand-muted">
-        <p>
-          Nearly a decade ago, <strong>Shaan-e-Taj</strong> was born inside a home — built by one woman who remains the heart of the brand.
-        </p>
-        <p>
-          Each suit was carefully selected, each order packed by hand, every relationship built on trust. Today we offer custom tailoring, hand embroidery, and couture-level craftsmanship shipped pan India.
-        </p>
+        <p>{siteConfig.about.intro}</p>
+        {siteConfig.about.story.map((p) => (
+          <p key={p}>{p}</p>
+        ))}
         <p className="serif text-lg italic text-rose-dark">
-          From a single room to an internationally admired luxury couture house — and this is only the beginning.
+          From Jalandhar to your wardrobe — every piece tells a story of grace, craft, and celebration.
         </p>
+      </div>
+
+      <ul className="mt-10 grid gap-3 sm:grid-cols-2">
+        {siteConfig.about.highlights.map((h) => (
+          <li
+            key={h}
+            className="rounded-sm border border-brand-border bg-white px-4 py-3 text-sm text-brand-text"
+          >
+            ✦ {h}
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-12 border-t border-brand-border pt-10">
+        <p className="text-[10px] uppercase tracking-[0.25em] text-rose">Follow Us</p>
+        <SocialLinks className="mt-4" />
       </div>
     </section>
   );

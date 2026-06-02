@@ -18,17 +18,23 @@ function LoginForm() {
     setError("");
     setLoading(true);
     const fd = new FormData(e.currentTarget);
-    const email = String(fd.get("email") ?? "");
-    const phone = String(fd.get("phone") ?? "");
+    const email = String(fd.get("email") ?? "").trim().toLowerCase();
+    const phone = String(fd.get("phone") ?? "").trim();
     const password = String(fd.get("password") ?? "");
     const name = String(fd.get("name") ?? "");
+
+    if (mode === "login" && !email && !phone) {
+      setError("Enter email or phone");
+      setLoading(false);
+      return;
+    }
 
     try {
       if (mode === "register") {
         const res = await fetch("/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, phone, password }),
+          body: JSON.stringify({ name, email: email || undefined, phone: phone || undefined, password }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Registration failed");
@@ -39,9 +45,14 @@ function LoginForm() {
         email: email || undefined,
         phone: phone || undefined,
         password,
+        callbackUrl: params.get("callbackUrl") ?? "/",
       });
-      if (result?.error) throw new Error("Invalid credentials");
-      router.push(params.get("callbackUrl") ?? "/");
+      if (result?.error) {
+        throw new Error(
+          "Login failed. Use lowercase email: navleensingh05@gmail.com — or try again in 2 min after site update."
+        );
+      }
+      router.push(params.get("callbackUrl") ?? "/admin");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

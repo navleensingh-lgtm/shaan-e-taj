@@ -5,6 +5,7 @@ import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { Providers } from "@/components/Providers";
+import { siteConfig } from "@/lib/site-config";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -20,15 +21,16 @@ const jost = Jost({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://shaanetaj.com"
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.shaanetaj.com"
   ),
-  title: "Shaan-e-Taj | Luxury Indian Couture",
-  description:
-    "Hand-embroidered bridal, party wear & festive couture. Custom stitching. Pan India shipping.",
+  title: `${siteConfig.brand} | ${siteConfig.tagline} — Jalandhar`,
+  description: siteConfig.description,
   openGraph: {
-    siteName: "Shaan-e-Taj",
+    siteName: siteConfig.brand,
     locale: "en_IN",
     type: "website",
+    title: `${siteConfig.brand} — Taj Fashion Jalandhar`,
+    description: siteConfig.description,
   },
 };
 

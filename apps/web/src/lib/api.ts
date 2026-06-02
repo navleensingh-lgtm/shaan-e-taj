@@ -1,4 +1,9 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+function apiBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  return "http://localhost:3000";
+}
 
 export type ProductImage = {
   url: string;
@@ -25,7 +30,7 @@ export async function fetchProducts(params?: Record<string, string>) {
   const empty = { items: [] as Product[], total: 0 };
   try {
     const qs = params ? `?${new URLSearchParams(params)}` : "";
-    const res = await fetch(`${API_URL}/products${qs}`, {
+    const res = await fetch(`${apiBaseUrl()}/api/products${qs}`, {
       next: { revalidate: 60 },
     });
     if (!res.ok) return empty;
@@ -40,7 +45,7 @@ export async function trackEvent(
   meta?: { productId?: string; userId?: string; metadata?: Record<string, string> }
 ) {
   try {
-    await fetch(`${API_URL}/analytics/event`, {
+    await fetch(`${apiBaseUrl()}/api/analytics/event`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type, ...meta }),

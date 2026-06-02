@@ -4,8 +4,6 @@ import { useCallback, useState } from "react";
 import type { Product } from "@/lib/api";
 import { ProductGrid } from "@/components/ProductGrid";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
-
 const MAIN_CATEGORIES = ["", "BRIDAL", "PARTY_WEAR", "FESTIVE", "NEW_ARRIVALS"];
 const SUB_CATEGORIES = [
   "",
@@ -51,7 +49,7 @@ export function CatalogClient({
     if (f.occasion) params.set("occasion", f.occasion);
     if (f.inStock) params.set("inStock", f.inStock);
 
-    const res = await fetch(`${API_URL}/products?${params}`);
+    const res = await fetch(`/api/products?${params}`);
     const data = await res.json();
     setProducts(data.items ?? []);
     setTotal(data.total ?? 0);

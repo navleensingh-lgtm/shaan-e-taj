@@ -8,6 +8,7 @@ import { orderMessage, whatsAppUrl } from "@/lib/whatsapp";
 import { trackEvent } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { WishlistButton } from "./WishlistButton";
+import { ProductShareButton } from "./ProductShareButton";
 
 type Props = { product: Product };
 
@@ -84,6 +85,7 @@ export function ProductCard({ product }: Props) {
             {outOfStock ? "Out of stock" : "Order Now"}
           </button>
           <WishlistButton productId={product.id} />
+          <ProductShareButton slug={product.slug} name={product.name} />
         </div>
         <a
           href={whatsAppUrl(

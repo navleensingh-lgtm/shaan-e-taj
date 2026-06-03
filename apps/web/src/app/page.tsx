@@ -81,7 +81,7 @@ export default async function HomePage() {
         <div className="mt-10 text-center">
           <Link
             href="/catalog"
-            className="inline-block rounded-sm border border-brand-border px-8 py-3 text-[11px] uppercase tracking-[0.15em] transition hover:border-rose"
+            className="inline-block rounded-sm bg-brand-text px-8 py-3 text-[11px] uppercase tracking-[0.15em] text-ivory transition hover:bg-rose-dark"
           >
             View Full Catalog
           </Link>

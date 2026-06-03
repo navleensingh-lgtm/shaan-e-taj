@@ -37,14 +37,14 @@ export function SocialLinks({ className = "" }: { className?: string }) {
 
 export function SocialLinksFooter() {
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-3 text-xs sm:gap-4 sm:text-sm">
       {items.map((s) => (
         <Link
           key={s.href}
           href={s.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-brand-subtle transition hover:text-gold"
+          className="text-brand-subtle transition hover:text-gold"
         >
           {s.label}
         </Link>

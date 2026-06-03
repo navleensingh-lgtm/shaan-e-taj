@@ -16,6 +16,8 @@ const SUB_CATEGORIES = [
   "SALWAR_SUIT",
 ];
 
+const CATALOG_LIMIT = "200";
+
 type Filters = {
   mainCategory: string;
   subCategory: string;
@@ -24,7 +26,6 @@ type Filters = {
   color: string;
   fabric: string;
   occasion: string;
-  inStock: string;
 };
 
 export function CatalogClient({
@@ -37,7 +38,6 @@ export function CatalogClient({
   const [products, setProducts] = useState(initialProducts);
   const [total, setTotal] = useState(initialTotal);
   const [q, setQ] = useState("");
-  const [showOutOfStock, setShowOutOfStock] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     mainCategory: "",
     subCategory: "",
@@ -46,11 +46,10 @@ export function CatalogClient({
     color: "",
     fabric: "",
     occasion: "",
-    inStock: "true",
   });
 
   const load = useCallback(async (query: string, f: Filters) => {
-    const params = new URLSearchParams({ limit: "48" });
+    const params = new URLSearchParams({ limit: CATALOG_LIMIT });
     if (query) params.set("q", query);
     if (f.mainCategory) params.set("mainCategory", f.mainCategory);
     if (f.subCategory) params.set("subCategory", f.subCategory);
@@ -59,7 +58,6 @@ export function CatalogClient({
     if (f.color) params.set("color", f.color);
     if (f.fabric) params.set("fabric", f.fabric);
     if (f.occasion) params.set("occasion", f.occasion);
-    if (f.inStock) params.set("inStock", f.inStock);
 
     const res = await fetch(`/api/products?${params}`, { cache: "no-store" });
     const data = await res.json();
@@ -78,24 +76,19 @@ export function CatalogClient({
     load(q, next);
   }
 
-  function toggleOutOfStock() {
-    const nextShow = !showOutOfStock;
-    setShowOutOfStock(nextShow);
-    const nextFilters = { ...filters, inStock: nextShow ? "" : "true" };
-    setFilters(nextFilters);
-    load(q, nextFilters);
-  }
-
   return (
-    <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8">
+    <section className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">
       <p className="text-[10px] uppercase tracking-[0.3em] text-rose">Full Catalog</p>
       <h1 className="serif mt-3 text-4xl md:text-5xl">Shop All</h1>
+      <p className="mt-2 text-sm text-brand-subtle">
+        New & past collections — tap Share on any piece to send its link.
+      </p>
 
       <form onSubmit={onSearch} className="mt-8 flex gap-2">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder='AI search: "red wedding suit"'
+          placeholder='Search: "red wedding suit"'
           className="flex-1 rounded-sm border border-brand-border bg-white px-4 py-3 text-sm outline-none focus:border-rose"
         />
         <button type="submit" className="rounded-sm bg-rose px-6 text-[11px] uppercase tracking-wider text-white">
@@ -156,23 +149,12 @@ export function CatalogClient({
           placeholder="Occasion"
           value={filters.occasion}
           onChange={(e) => onFilterChange("occasion", e.target.value)}
-          className="border border-brand-border bg-white px-3 py-2 text-sm"
+          className="border border-brand-border bg-white px-3 py-2 text-sm sm:col-span-2"
         />
-        <button
-          type="button"
-          onClick={toggleOutOfStock}
-          className={`border px-3 py-2 text-[11px] uppercase tracking-wider transition ${
-            showOutOfStock
-              ? "border-rose bg-rose text-white"
-              : "border-brand-border bg-white text-brand-muted hover:border-rose"
-          }`}
-        >
-          {showOutOfStock ? "Hide out of stock" : "Show out of stock"}
-        </button>
       </div>
 
       <p className="mt-4 text-xs text-brand-subtle">
-        {total} pieces · {showOutOfStock ? "including out of stock" : "in stock only"}
+        {total} pieces · showing {products.length}
       </p>
       <ProductGrid products={products} />
     </section>

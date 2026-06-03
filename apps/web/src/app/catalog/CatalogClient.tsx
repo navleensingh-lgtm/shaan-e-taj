@@ -16,6 +16,17 @@ const SUB_CATEGORIES = [
   "SALWAR_SUIT",
 ];
 
+type Filters = {
+  mainCategory: string;
+  subCategory: string;
+  minPrice: string;
+  maxPrice: string;
+  color: string;
+  fabric: string;
+  occasion: string;
+  inStock: string;
+};
+
 export function CatalogClient({
   initialProducts,
   total: initialTotal,
@@ -26,7 +37,8 @@ export function CatalogClient({
   const [products, setProducts] = useState(initialProducts);
   const [total, setTotal] = useState(initialTotal);
   const [q, setQ] = useState("");
-  const [filters, setFilters] = useState({
+  const [showOutOfStock, setShowOutOfStock] = useState(false);
+  const [filters, setFilters] = useState<Filters>({
     mainCategory: "",
     subCategory: "",
     minPrice: "",
@@ -34,10 +46,10 @@ export function CatalogClient({
     color: "",
     fabric: "",
     occasion: "",
-    inStock: "",
+    inStock: "true",
   });
 
-  const load = useCallback(async (query: string, f: typeof filters) => {
+  const load = useCallback(async (query: string, f: Filters) => {
     const params = new URLSearchParams({ limit: "48" });
     if (query) params.set("q", query);
     if (f.mainCategory) params.set("mainCategory", f.mainCategory);
@@ -60,10 +72,18 @@ export function CatalogClient({
     load(q, filters);
   }
 
-  function onFilterChange(key: keyof typeof filters, value: string) {
+  function onFilterChange(key: keyof Filters, value: string) {
     const next = { ...filters, [key]: value };
     setFilters(next);
     load(q, next);
+  }
+
+  function toggleOutOfStock() {
+    const nextShow = !showOutOfStock;
+    setShowOutOfStock(nextShow);
+    const nextFilters = { ...filters, inStock: nextShow ? "" : "true" };
+    setFilters(nextFilters);
+    load(q, nextFilters);
   }
 
   return (
@@ -138,17 +158,22 @@ export function CatalogClient({
           onChange={(e) => onFilterChange("occasion", e.target.value)}
           className="border border-brand-border bg-white px-3 py-2 text-sm"
         />
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={filters.inStock === "true"}
-            onChange={(e) => onFilterChange("inStock", e.target.checked ? "true" : "")}
-          />
-          In stock only
-        </label>
+        <button
+          type="button"
+          onClick={toggleOutOfStock}
+          className={`border px-3 py-2 text-[11px] uppercase tracking-wider transition ${
+            showOutOfStock
+              ? "border-rose bg-rose text-white"
+              : "border-brand-border bg-white text-brand-muted hover:border-rose"
+          }`}
+        >
+          {showOutOfStock ? "Hide out of stock" : "Show out of stock"}
+        </button>
       </div>
 
-      <p className="mt-4 text-xs text-brand-subtle">{total} pieces · AI semantic search</p>
+      <p className="mt-4 text-xs text-brand-subtle">
+        {total} pieces · {showOutOfStock ? "including out of stock" : "in stock only"}
+      </p>
       <ProductGrid products={products} />
     </section>
   );

@@ -8,7 +8,7 @@ type Props = {
 };
 
 export async function CollectionPage({ title, tag, query }: Props) {
-  const { items } = await fetchProducts(query);
+  const { items } = await fetchProducts({ ...query, inStock: "true" });
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8">

@@ -11,9 +11,9 @@ import { siteConfig } from "@/lib/site-config";
 export const dynamic = "force-dynamic";
 
 async function loadHomeProducts() {
-  const featured = await fetchProducts({ isNewArrival: "true", limit: "8" });
+  const featured = await fetchProducts({ isNewArrival: "true", limit: "8", inStock: "true" });
   if (featured.items.length > 0) return featured.items;
-  const latest = await fetchProducts({ limit: "8" });
+  const latest = await fetchProducts({ limit: "8", inStock: "true" });
   return latest.items;
 }
 

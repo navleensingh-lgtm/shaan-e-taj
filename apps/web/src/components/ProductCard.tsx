@@ -16,6 +16,9 @@ export function ProductCard({ product }: Props) {
   const router = useRouter();
   const img = product.images.find((i) => i.isPrimary) ?? product.images[0];
   const price = product.priceInPaise / 100;
+  const mrp = product.compareAtPaise ? product.compareAtPaise / 100 : null;
+  const onSale = mrp != null && mrp > price;
+  const outOfStock = product.inStock === false;
 
   function orderNow() {
     addItem({
@@ -46,7 +49,12 @@ export function ProductCard({ product }: Props) {
               No image
             </div>
           )}
-          {product.badge && (
+          {outOfStock && (
+            <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-[11px] uppercase tracking-wider text-white">
+              Out of stock
+            </span>
+          )}
+          {product.badge && !outOfStock && (
             <span className="absolute left-3 top-3 bg-rose px-2.5 py-1 text-[10px] uppercase tracking-wider text-white">
               {product.badge}
             </span>
@@ -58,6 +66,11 @@ export function ProductCard({ product }: Props) {
         <h3 className="serif mt-1 text-xl text-brand-text">{product.name}</h3>
         <p className="mt-1 font-medium text-rose-dark">
           ₹{price.toLocaleString("en-IN")}
+          {onSale && (
+            <span className="ml-2 text-sm font-normal text-brand-subtle line-through">
+              ₹{mrp!.toLocaleString("en-IN")}
+            </span>
+          )}
         </p>
       </Link>
       <div className="mt-3 flex flex-col gap-2">
@@ -65,9 +78,10 @@ export function ProductCard({ product }: Props) {
           <button
             type="button"
             onClick={orderNow}
-            className="flex flex-1 items-center justify-center rounded-sm bg-rose py-2.5 text-[11px] uppercase tracking-wider text-white"
+            disabled={outOfStock}
+            className="flex flex-1 items-center justify-center rounded-sm bg-rose py-2.5 text-[11px] uppercase tracking-wider text-white disabled:opacity-50"
           >
-            Order Now
+            {outOfStock ? "Out of stock" : "Order Now"}
           </button>
           <WishlistButton productId={product.id} />
         </div>

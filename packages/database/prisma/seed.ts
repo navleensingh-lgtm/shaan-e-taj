@@ -6,8 +6,13 @@ const prisma = new PrismaClient();
 async function main() {
   await prisma.siteSettings.upsert({
     where: { id: "default" },
-    create: { id: "default" },
-    update: {},
+    create: {
+      id: "default",
+      whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") ?? "919876543210",
+    },
+    update: {
+      whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") ?? undefined,
+    },
   });
 
   const adminEmail = (process.env.ADMIN_EMAIL ?? "admin@shaanetaj.com").toLowerCase();

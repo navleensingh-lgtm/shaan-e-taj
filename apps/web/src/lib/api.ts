@@ -21,8 +21,10 @@ export type Product = {
   fabric?: string | null;
   color?: string | null;
   priceInPaise: number;
+  compareAtPaise?: number | null;
   badge?: string | null;
   stitchingAvailable: boolean;
+  inStock?: boolean;
   images: ProductImage[];
 };
 

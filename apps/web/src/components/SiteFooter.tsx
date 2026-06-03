@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/site-config";
+import { getPublicStoreSettings, formatStoreAddress } from "@/lib/store-settings";
 import { SocialLinksFooter } from "@/components/SocialLinks";
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const store = await getPublicStoreSettings();
+  const fullAddress = formatStoreAddress(store);
+
   return (
     <footer className="mt-20 bg-brand-text px-5 py-14 text-ivory-2 lg:px-8">
       <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-4">
@@ -16,6 +20,26 @@ export function SiteFooter() {
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-brand-subtle">
             {siteConfig.description}
           </p>
+          <div className="mt-5 border-t border-white/10 pt-5">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-gold">Visit us</p>
+            <p className="mt-3 text-sm leading-relaxed text-brand-subtle">
+              {store.storeAddressLine1}
+              <br />
+              {store.storeAddressLine2}
+              <br />
+              {store.storeLandmark}
+              <br />
+              PIN {store.storePincode}
+            </p>
+            <a
+              href={store.storeMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-block text-xs uppercase tracking-wider text-gold underline"
+            >
+              Get directions →
+            </a>
+          </div>
           <div className="mt-5">
             <SocialLinksFooter />
           </div>
@@ -33,12 +57,12 @@ export function SiteFooter() {
           <p className="text-[10px] uppercase tracking-[0.25em] text-gold">Connect</p>
           <ul className="mt-4 space-y-2 text-sm text-brand-subtle">
             <li>
-              <a href={siteConfig.social.youtube} target="_blank" rel="noopener noreferrer">
+              <a href={store.youtubeUrl} target="_blank" rel="noopener noreferrer">
                 YouTube
               </a>
             </li>
             <li>
-              <a href={siteConfig.social.instagram} target="_blank" rel="noopener noreferrer">
+              <a href={store.instagramUrl} target="_blank" rel="noopener noreferrer">
                 Instagram
               </a>
             </li>
@@ -49,7 +73,7 @@ export function SiteFooter() {
         </div>
       </div>
       <p className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-6 text-xs text-brand-subtle">
-        © {new Date().getFullYear()} {siteConfig.brand} · {siteConfig.city}, {siteConfig.state}
+        © {new Date().getFullYear()} {siteConfig.brand} · {fullAddress}
       </p>
     </footer>
   );

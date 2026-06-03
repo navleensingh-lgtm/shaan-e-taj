@@ -9,9 +9,21 @@ async function main() {
     create: {
       id: "default",
       whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") ?? "919876543210",
+      storeAddressLine1: "120, Gulmarg Ave",
+      storeAddressLine2: "Ladhewali",
+      storeLandmark: "Jalandhar, Punjab",
+      storePincode: "144005",
+      storeMapUrl:
+        "https://maps.google.com/?q=120+Gulmarg+Ave+Ladhewali+Jalandhar+Punjab+144005",
     },
     update: {
       whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") ?? undefined,
+      storeAddressLine1: "120, Gulmarg Ave",
+      storeAddressLine2: "Ladhewali",
+      storeLandmark: "Jalandhar, Punjab",
+      storePincode: "144005",
+      storeMapUrl:
+        "https://maps.google.com/?q=120+Gulmarg+Ave+Ladhewali+Jalandhar+Punjab+144005",
     },
   });
 

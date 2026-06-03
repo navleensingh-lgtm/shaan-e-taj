@@ -19,12 +19,13 @@ export type PublicStoreSettings = {
 
 const defaults: PublicStoreSettings = {
   whatsappNumber: siteConfig.whatsapp.replace(/\D/g, "") || "919876543210",
-  storeAddressLine1: "Taj Fashion — Shaan-e-Taj Boutique",
-  storeAddressLine2: "Kapoor Market, Near Bus Stand",
-  storeLandmark: `${siteConfig.city}, ${siteConfig.state}`,
-  storePincode: "144001",
+  storeAddressLine1: "120, Gulmarg Ave",
+  storeAddressLine2: "Ladhewali",
+  storeLandmark: "Jalandhar, Punjab",
+  storePincode: "144005",
   storePhone: "",
-  storeMapUrl: "https://maps.google.com/?q=Taj+Fashion+Jalandhar+Kapoor+Market",
+  storeMapUrl:
+    "https://maps.google.com/?q=120+Gulmarg+Ave+Ladhewali+Jalandhar+Punjab+144005",
   storeHoursWeekdays: siteConfig.hours.weekdays,
   storeHoursSunday: siteConfig.hours.sunday,
   youtubeUrl: siteConfig.social.youtube,

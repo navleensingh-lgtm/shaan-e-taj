@@ -80,6 +80,8 @@ export default function CartPage() {
             <OrderPricingSummary
               subtotalPaise={pricing.subtotalPaise}
               stitchingPaise={pricing.stitchingPaise}
+              stitchingPerUnitPaise={pricing.stitchingPerUnitPaise}
+              itemQuantity={pricing.itemQuantity}
               shippingPaise={pricing.shippingPaise}
               totalPaise={pricing.totalPaise}
               stitchingType={stitchingType}

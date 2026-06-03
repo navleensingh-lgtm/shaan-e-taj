@@ -63,7 +63,13 @@ export async function createCheckoutOrder(userId: string, body: CheckoutBody) {
 
   if (!lineItems.length) throw new Error("No valid in-stock products in cart");
 
-  const pricing = calculateOrderPricing(subtotalPaise, stitchingChoice, pricingSettings);
+  const totalItemQuantity = lineItems.reduce((sum, line) => sum + line.quantity, 0);
+  const pricing = calculateOrderPricing(
+    subtotalPaise,
+    stitchingChoice,
+    pricingSettings,
+    totalItemQuantity
+  );
   const receipt = orderNumber();
 
   const order = await prisma.order.create({

@@ -28,7 +28,8 @@ export function StitchingOptions({ product }: { product: Product }) {
   const router = useRouter();
   const settings = useStoreSettings();
   const [stitching, setStitching] = useState<StitchingChoice>("UNSTITCHED");
-  const pricing = useProductPricing(product.priceInPaise, stitching);
+  const [quantity, setQuantity] = useState(1);
+  const pricing = useProductPricing(product.priceInPaise, stitching, quantity);
 
   function orderNow() {
     setStitchingType(stitching);
@@ -37,14 +38,15 @@ export function StitchingOptions({ product }: { product: Product }) {
       slug: product.slug,
       name: product.name,
       priceInPaise: product.priceInPaise,
-    });
+    }, quantity);
     router.push("/cart");
   }
 
   const whatsappHref = orderWhatsAppUrl({
     name: product.name,
     slug: product.slug,
-    price: product.priceInPaise / 100,
+    price: pricing.subtotalPaise / 100,
+    quantity,
     category: product.mainCategory.replace(/_/g, " "),
     style: product.subCategory?.replace(/_/g, " "),
     fabric: product.fabric,
@@ -58,6 +60,29 @@ export function StitchingOptions({ product }: { product: Product }) {
 
   return (
     <div id="stitching" className="mt-8">
+      <div className="mb-4">
+        <p className="text-[11px] uppercase tracking-wider text-brand-muted">Quantity</p>
+        <div className="mt-2 flex items-center gap-3">
+          <button
+            type="button"
+            aria-label="Decrease quantity"
+            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+            className="h-9 w-9 rounded-sm border border-brand-border text-lg leading-none hover:border-rose"
+          >
+            −
+          </button>
+          <span className="min-w-[2ch] text-center text-sm font-medium">{quantity}</span>
+          <button
+            type="button"
+            aria-label="Increase quantity"
+            onClick={() => setQuantity((q) => q + 1)}
+            className="h-9 w-9 rounded-sm border border-brand-border text-lg leading-none hover:border-rose"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
       {product.stitchingAvailable && (
         <StitchingSelector
           value={stitching}
@@ -72,6 +97,8 @@ export function StitchingOptions({ product }: { product: Product }) {
         <OrderPricingSummary
           subtotalPaise={pricing.subtotalPaise}
           stitchingPaise={pricing.stitchingPaise}
+          stitchingPerUnitPaise={pricing.stitchingPerUnitPaise}
+          itemQuantity={pricing.itemQuantity}
           shippingPaise={pricing.shippingPaise}
           totalPaise={pricing.totalPaise}
           stitchingType={stitching}

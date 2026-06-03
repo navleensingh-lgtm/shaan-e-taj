@@ -33,7 +33,7 @@ export function StitchingSelector({ value, onChange, disabled, stitchChargeRupee
           >
             {s.label}
             {s.value === "FULLY_STITCHED" && stitchChargeRupees != null && stitchChargeRupees > 0 && (
-              <span className="ml-1 text-[10px] opacity-90">(+₹{stitchChargeRupees})</span>
+              <span className="ml-1 text-[10px] opacity-90">(+₹{stitchChargeRupees}/suit)</span>
             )}
           </button>
         ))}

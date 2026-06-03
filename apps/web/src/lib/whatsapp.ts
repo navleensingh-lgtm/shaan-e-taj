@@ -49,7 +49,9 @@ export function orderMessage(product: OrderProductInput): string {
     sku ? `SKU: ${sku}` : "",
     `Stitching: ${stitchingLabel}`,
     product.stitchingCharge != null && product.stitchingCharge > 0
-      ? `Stitching Charge: ₹${product.stitchingCharge.toLocaleString("en-IN")}`
+      ? product.quantity && product.quantity > 1 && product.stitchingType === "FULLY_STITCHED"
+        ? `Stitching Charge: ₹${(product.stitchingCharge / product.quantity).toLocaleString("en-IN")}/suit × ${product.quantity} = ₹${product.stitchingCharge.toLocaleString("en-IN")}`
+        : `Stitching Charge: ₹${product.stitchingCharge.toLocaleString("en-IN")}`
       : product.stitchingType === "FULLY_STITCHED"
         ? "Stitching Charge: ₹0"
         : "",

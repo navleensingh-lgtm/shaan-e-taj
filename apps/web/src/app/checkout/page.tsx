@@ -21,7 +21,7 @@ declare global {
 
 export default function CheckoutPage() {
   const { data: session, status } = useSession();
-  const { items, clear, stitchingType, setStitchingType } = useCart();
+  const { items, clear, stitchingType, setStitchingType, count } = useCart();
   const pricing = useOrderPricing();
   const settings = useStoreSettings();
   const router = useRouter();
@@ -222,11 +222,13 @@ export default function CheckoutPage() {
           <OrderPricingSummary
             subtotalPaise={pricing.subtotalPaise}
             stitchingPaise={pricing.stitchingPaise}
+            stitchingPerUnitPaise={pricing.stitchingPerUnitPaise}
+            itemQuantity={pricing.itemQuantity}
             shippingPaise={pricing.shippingPaise}
             totalPaise={pricing.totalPaise}
             stitchingType={stitchingType}
           />
-          <p className="mt-2 text-xs text-brand-subtle">{items.length} item(s) in cart</p>
+          <p className="mt-2 text-xs text-brand-subtle">{count} item(s) in cart</p>
         </div>
 
         {error && <p className="text-sm text-rose">{error}</p>}

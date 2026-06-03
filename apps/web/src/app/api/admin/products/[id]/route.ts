@@ -60,7 +60,10 @@ export async function PATCH(req: Request, { params }: Params) {
   if (body.status != null) {
     data.status = body.status as ProductStatus;
     if (body.status === ProductStatus.PUBLISHED) {
-      data.publishedAt = new Date();
+      data.publishedAt = existing.publishedAt ?? new Date();
+      if (body.isNewArrival == null && !existing.isNewArrival) {
+        data.isNewArrival = true;
+      }
     }
   }
 

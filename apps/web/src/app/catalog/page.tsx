@@ -1,9 +1,9 @@
 import { CatalogClient } from "./CatalogClient";
-import { fetchProducts } from "@/lib/api";
+import { getCatalogProducts } from "@/lib/products-server";
 
 export const dynamic = "force-dynamic";
 
 export default async function CatalogPage() {
-  const { items, total } = await fetchProducts({ limit: "200" });
+  const { items, total } = await getCatalogProducts();
   return <CatalogClient initialProducts={items} total={total} />;
 }

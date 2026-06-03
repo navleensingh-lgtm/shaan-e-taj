@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Product } from "@/lib/api";
 import { ProductGrid } from "@/components/ProductGrid";
 
@@ -60,9 +60,17 @@ export function CatalogClient({
     if (f.occasion) params.set("occasion", f.occasion);
 
     const res = await fetch(`/api/products?${params}`, { cache: "no-store" });
+    if (!res.ok) return;
     const data = await res.json();
     setProducts(data.items ?? []);
     setTotal(data.total ?? 0);
+  }, []);
+
+  useEffect(() => {
+    if (initialProducts.length === 0) {
+      void load("", filters);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount if SSR returned empty
   }, []);
 
   function onSearch(e: React.FormEvent) {

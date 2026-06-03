@@ -57,6 +57,7 @@ export function StitchingOptions({ product }: { product: Product }) {
           href={whatsAppUrl(
             orderMessage({
               name: product.name,
+              slug: product.slug,
               category: product.mainCategory.replace(/_/g, " "),
               price,
               fabric: product.fabric,

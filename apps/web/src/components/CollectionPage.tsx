@@ -1,5 +1,7 @@
 import { ProductGrid } from "@/components/ProductGrid";
-import { fetchProducts } from "@/lib/api";
+import { listProducts } from "@/lib/products-server";
+
+export const dynamic = "force-dynamic";
 
 type Props = {
   title: string;
@@ -8,7 +10,7 @@ type Props = {
 };
 
 export async function CollectionPage({ title, tag, query }: Props) {
-  const { items } = await fetchProducts({ ...query, inStock: "true" });
+  const { items } = await listProducts(query);
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8">

@@ -91,6 +91,7 @@ export function ProductCard({ product }: Props) {
           href={whatsAppUrl(
             orderMessage({
               name: product.name,
+              slug: product.slug,
               category: product.mainCategory.replace(/_/g, " "),
               price,
               color: product.color,

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api-client";
+import { formatOrderAddresses } from "@/lib/format-order-address";
 
 type Order = {
   id: string;
@@ -11,6 +12,21 @@ type Order = {
   trackingNumber?: string | null;
   trackingCarrier?: string | null;
   trackingUrl?: string | null;
+  shippingName?: string | null;
+  shippingPhone?: string | null;
+  shippingEmail?: string | null;
+  shippingLine1?: string | null;
+  shippingLine2?: string | null;
+  shippingCity?: string | null;
+  shippingState?: string | null;
+  shippingPincode?: string | null;
+  billingName?: string | null;
+  billingPhone?: string | null;
+  billingLine1?: string | null;
+  billingLine2?: string | null;
+  billingCity?: string | null;
+  billingState?: string | null;
+  billingPincode?: string | null;
   user?: { name?: string; email?: string; phone?: string };
 };
 
@@ -66,7 +82,9 @@ export function AdminOrders() {
         Mark shipped with tracking ID — customer sees delivery estimate on My Orders.
       </p>
       <ul className="mt-6 space-y-3">
-        {orders.slice(0, 15).map((o) => (
+        {orders.slice(0, 15).map((o) => {
+          const addr = formatOrderAddresses(o);
+          return (
           <li key={o.id} className="border border-brand-border p-4 text-sm">
             <div className="flex flex-wrap justify-between gap-2">
               <span>
@@ -77,6 +95,12 @@ export function AdminOrders() {
             <p className="text-brand-subtle">
               {o.user?.name ?? o.user?.email ?? o.user?.phone ?? "Guest"}
             </p>
+            {addr.shipping && (
+              <pre className="mt-3 whitespace-pre-wrap rounded-sm bg-ivory-2 p-3 text-xs leading-relaxed text-brand-text">
+                {addr.shipping}
+                {addr.billing ? `\n\n${addr.billing}` : ""}
+              </pre>
+            )}
             {o.trackingNumber && (
               <p className="mt-1">
                 Tracking: {o.trackingCarrier} {o.trackingNumber}
@@ -136,7 +160,8 @@ export function AdminOrders() {
               </button>
             )}
           </li>
-        ))}
+        );
+        })}
       </ul>
     </div>
   );

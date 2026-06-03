@@ -241,6 +241,21 @@ model Order {
   razorpayOrderId String?
   razorpayPaymentId String?
   notes           String?
+  shippingName    String?
+  shippingPhone   String?
+  shippingEmail   String?
+  shippingLine1   String?
+  shippingLine2   String?
+  shippingCity    String?
+  shippingState   String?
+  shippingPincode String?
+  billingName     String?
+  billingPhone    String?
+  billingLine1    String?
+  billingLine2    String?
+  billingCity     String?
+  billingState    String?
+  billingPincode  String?
   trackingNumber  String?
   trackingCarrier String?
   trackingUrl     String?

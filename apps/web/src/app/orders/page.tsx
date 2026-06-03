@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api-client";
 import { OrderTracking } from "@/components/OrderTracking";
 import { getDeliveryEstimate } from "@/lib/order-tracking";
+import { formatOrderAddresses } from "@/lib/format-order-address";
 
 type Order = {
   id: string;
@@ -19,6 +20,21 @@ type Order = {
   trackingUrl?: string | null;
   shippedAt?: string | null;
   estimatedDeliveryAt?: string | null;
+  shippingName?: string | null;
+  shippingPhone?: string | null;
+  shippingEmail?: string | null;
+  shippingLine1?: string | null;
+  shippingLine2?: string | null;
+  shippingCity?: string | null;
+  shippingState?: string | null;
+  shippingPincode?: string | null;
+  billingName?: string | null;
+  billingPhone?: string | null;
+  billingLine1?: string | null;
+  billingLine2?: string | null;
+  billingCity?: string | null;
+  billingState?: string | null;
+  billingPincode?: string | null;
   items: { name: string; quantity: number; pricePaise: number }[];
 };
 
@@ -88,6 +104,7 @@ export default function OrdersPage() {
         )}
         {orders.map((o) => {
           const headline = getDeliveryEstimate(o);
+          const addr = formatOrderAddresses(o);
           return (
             <div key={o.id} className="border border-brand-border bg-white p-5">
               <div className="flex flex-wrap items-start justify-between gap-2 text-sm">
@@ -125,6 +142,19 @@ export default function OrdersPage() {
                   </li>
                 ))}
               </ul>
+
+              {addr.shipping && (
+                <div className="mt-4 rounded-sm bg-ivory-2 p-3 text-xs leading-relaxed text-brand-text">
+                  <p className="text-[10px] uppercase tracking-wider text-brand-subtle">Delivery address</p>
+                  <pre className="mt-1 whitespace-pre-wrap font-sans">{addr.shipping}</pre>
+                  {addr.billing && (
+                    <>
+                      <p className="mt-3 text-[10px] uppercase tracking-wider text-brand-subtle">Billing</p>
+                      <pre className="mt-1 whitespace-pre-wrap font-sans">{addr.billing}</pre>
+                    </>
+                  )}
+                </div>
+              )}
 
               <OrderTracking order={o} />
 

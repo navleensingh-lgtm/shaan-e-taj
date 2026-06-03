@@ -3,9 +3,11 @@
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { apiFetch } from "@/lib/api-client";
+import { AddressFields } from "@/components/AddressFields";
+import { emptyAddress, validateAddress, type AddressInput } from "@/lib/checkout-address";
 
 declare global {
   interface Window {
@@ -25,6 +27,23 @@ export default function CheckoutPage() {
   const [stitching, setStitching] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [shipping, setShipping] = useState<AddressInput>(emptyAddress());
+  const [billing, setBilling] = useState<AddressInput>(emptyAddress());
+  const [billingSame, setBillingSame] = useState(true);
+  const [orderNotes, setOrderNotes] = useState("");
+
+  useEffect(() => {
+    if (!session?.user) return;
+    setShipping((s) => ({
+      ...s,
+      fullName: session.user?.name ?? s.fullName,
+      email: session.user?.email ?? s.email,
+    }));
+  }, [session]);
+
+  if (status === "loading") {
+    return <p className="p-20 text-center text-brand-muted">Loading…</p>;
+  }
 
   if (status === "unauthenticated") {
     return (
@@ -48,15 +67,33 @@ export default function CheckoutPage() {
     );
   }
 
-  async function pay() {
-    setLoading(true);
+  async function pay(e: React.FormEvent) {
+    e.preventDefault();
     setError("");
+
+    const shipErr = validateAddress(shipping, "Shipping");
+    if (shipErr) {
+      setError(shipErr);
+      return;
+    }
+    const billingAddr = billingSame ? shipping : billing;
+    const billErr = validateAddress(billingAddr, "Billing");
+    if (billErr) {
+      setError(billErr);
+      return;
+    }
+
+    setLoading(true);
     try {
       const checkout = await apiFetch("/orders/checkout", {
         method: "POST",
         body: JSON.stringify({
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
           stitchingType: stitching || undefined,
+          notes: orderNotes.trim() || undefined,
+          shipping,
+          billing: billingAddr,
+          billingSameAsShipping: billingSame,
         }),
       });
 
@@ -107,48 +144,105 @@ export default function CheckoutPage() {
           clear();
           router.push("/orders");
         },
-        prefill: { email: session?.user?.email ?? "" },
+        prefill: {
+          name: shipping.fullName,
+          email: shipping.email,
+          contact: shipping.phone.replace(/\D/g, "").slice(-10),
+        },
       });
       rzp.open();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Checkout failed");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Checkout failed");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <section className="mx-auto max-w-lg px-5 py-16">
+    <section className="mx-auto max-w-2xl px-5 py-16 lg:px-8">
       <h1 className="serif text-4xl">Checkout</h1>
-      <p className="mt-4 text-lg text-rose-dark">
-        Total: ₹{(totalPaise / 100).toLocaleString("en-IN")}
+      <p className="mt-2 text-sm text-brand-muted">
+        Enter shipping and billing details — we ship pan India from Jalandhar.
       </p>
-      <div className="mt-6">
-        <p className="text-[11px] uppercase tracking-wider text-brand-muted">Stitching</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {STITCHING.map((s) => (
-            <button
-              key={s.value}
-              type="button"
-              onClick={() => setStitching(s.value)}
-              className={`rounded-sm border px-3 py-2 text-sm ${
-                stitching === s.value ? "border-rose bg-rose text-white" : ""
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
+
+      <form onSubmit={pay} className="mt-8 space-y-8">
+        <div className="rounded-sm border border-brand-border bg-white p-6">
+          <AddressFields
+            title="Shipping address"
+            value={shipping}
+            onChange={setShipping}
+            idPrefix="ship"
+          />
         </div>
-      </div>
-      {error && <p className="mt-4 text-sm text-rose">{error}</p>}
-      <button
-        type="button"
-        disabled={loading}
-        onClick={pay}
-        className="mt-8 w-full rounded-sm bg-rose py-4 text-[11px] uppercase tracking-wider text-white disabled:opacity-60"
-      >
-        {loading ? "Processing…" : "Pay with Razorpay"}
-      </button>
+
+        <div className="rounded-sm border border-brand-border bg-white p-6">
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={billingSame}
+              onChange={(e) => setBillingSame(e.target.checked)}
+              className="rounded border-brand-border"
+            />
+            Billing address same as shipping
+          </label>
+          {!billingSame && (
+            <div className="mt-6">
+              <AddressFields
+                title="Billing address"
+                value={billing}
+                onChange={setBilling}
+                idPrefix="bill"
+              />
+            </div>
+          )}
+        </div>
+
+        <div>
+          <p className="text-[11px] uppercase tracking-wider text-brand-muted">Stitching</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {STITCHING.map((s) => (
+              <button
+                key={s.value}
+                type="button"
+                onClick={() => setStitching(s.value)}
+                className={`rounded-sm border px-3 py-2 text-sm ${
+                  stitching === s.value ? "border-rose bg-rose text-white" : "border-brand-border"
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <label className="block text-sm">
+          Order notes (optional)
+          <textarea
+            value={orderNotes}
+            onChange={(e) => setOrderNotes(e.target.value)}
+            rows={2}
+            className="mt-1 w-full rounded-sm border border-brand-border bg-white px-3 py-2 text-sm"
+            placeholder="Delivery instructions, size notes…"
+          />
+        </label>
+
+        <div className="border-t border-brand-border pt-6">
+          <p className="text-lg font-medium text-rose-dark">
+            Order total: ₹{(totalPaise / 100).toLocaleString("en-IN")}
+          </p>
+          <p className="mt-1 text-xs text-brand-subtle">{items.length} item(s) in cart</p>
+        </div>
+
+        {error && <p className="text-sm text-rose">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-sm bg-rose py-4 text-[11px] uppercase tracking-wider text-white disabled:opacity-60"
+        >
+          {loading ? "Processing…" : "Pay with Razorpay"}
+        </button>
+      </form>
     </section>
   );
 }

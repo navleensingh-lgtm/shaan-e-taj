@@ -27,12 +27,27 @@ orderRoutes.post("/checkout", requireUser, async (req, res) => {
     measurements,
     guestPhone,
     notes,
+    shipping,
+    billing,
+    billingSameAsShipping,
   } = req.body as {
     items: { productId: string; quantity: number }[];
     stitchingType?: StitchingType;
     measurements?: Record<string, number>;
     guestPhone?: string;
     notes?: string;
+    shipping?: {
+      fullName: string;
+      phone: string;
+      email: string;
+      line1: string;
+      line2?: string;
+      city: string;
+      state: string;
+      pincode: string;
+    };
+    billing?: typeof shipping;
+    billingSameAsShipping?: boolean;
   };
 
   if (!items?.length) {
@@ -76,17 +91,43 @@ orderRoutes.post("/checkout", requireUser, async (req, res) => {
   const totalPaise = subtotalPaise + stitchingPaise;
   const receipt = orderNumber();
 
+  const ship = shipping;
+  const bill = billingSameAsShipping !== false ? ship : billing;
+  if (!ship?.line1 || !ship.fullName) {
+    res.status(400).json({ error: "Shipping address is required" });
+    return;
+  }
+  if (!bill?.line1 || !bill.fullName) {
+    res.status(400).json({ error: "Billing address is required" });
+    return;
+  }
+
   const order = await prisma.order.create({
     data: {
       orderNumber: receipt,
       userId: user.id,
-      guestPhone,
+      guestPhone: guestPhone ?? ship.phone?.replace(/\D/g, "").slice(-10),
       stitchingType: stitchingType ?? null,
       measurements: measurements ?? undefined,
       subtotalPaise,
       stitchingPaise,
       totalPaise,
       notes,
+      shippingName: ship.fullName.trim(),
+      shippingPhone: ship.phone.replace(/\D/g, "").slice(-10),
+      shippingEmail: ship.email.trim().toLowerCase(),
+      shippingLine1: ship.line1.trim(),
+      shippingLine2: ship.line2?.trim() || null,
+      shippingCity: ship.city.trim(),
+      shippingState: ship.state.trim(),
+      shippingPincode: ship.pincode.trim(),
+      billingName: bill.fullName.trim(),
+      billingPhone: bill.phone.replace(/\D/g, "").slice(-10),
+      billingLine1: bill.line1.trim(),
+      billingLine2: bill.line2?.trim() || null,
+      billingCity: bill.city.trim(),
+      billingState: bill.state.trim(),
+      billingPincode: bill.pincode.trim(),
       items: { create: lineItems },
     },
     include: { items: true },

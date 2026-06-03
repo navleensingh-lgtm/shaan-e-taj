@@ -1,13 +1,12 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import { UserRole } from "@shaan-e-taj/database";
 
 export default withAuth(
   function middleware(req) {
     const path = req.nextUrl.pathname;
     if (path.startsWith("/admin/login")) return NextResponse.next();
 
-    if (path.startsWith("/admin") && req.nextauth.token?.role !== UserRole.ADMIN) {
+    if (path.startsWith("/admin") && req.nextauth.token?.role !== "ADMIN") {
       return NextResponse.redirect(new URL("/admin/login", req.url));
     }
     return NextResponse.next();

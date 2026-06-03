@@ -101,10 +101,20 @@ export async function DELETE(_req: Request, { params }: Params) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await params;
+  const existing = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
+  if (!existing) {
+    return NextResponse.json({ error: "Product not found" }, { status: 404 });
+  }
+
   await prisma.product.update({
     where: { id },
-    data: { status: ProductStatus.ARCHIVED, inStock: false },
+    data: {
+      status: ProductStatus.ARCHIVED,
+      inStock: false,
+      isNewArrival: false,
+    },
   });
-  revalidateShop();
+
+  revalidateShop(existing.slug);
   return NextResponse.json({ ok: true });
 }

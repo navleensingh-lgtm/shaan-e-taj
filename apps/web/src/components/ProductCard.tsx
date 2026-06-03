@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Product } from "@/lib/api";
-import { orderMessage, whatsAppUrl } from "@/lib/whatsapp";
+import { orderWhatsAppUrl } from "@/lib/whatsapp";
 import { trackEvent } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { WishlistButton } from "./WishlistButton";
@@ -88,16 +88,16 @@ export function ProductCard({ product }: Props) {
           <ProductShareButton slug={product.slug} name={product.name} />
         </div>
         <a
-          href={whatsAppUrl(
-            orderMessage({
-              name: product.name,
-              slug: product.slug,
-              category: product.mainCategory.replace(/_/g, " "),
-              price,
-              color: product.color,
-              fabric: product.fabric,
-            })
-          )}
+          href={orderWhatsAppUrl({
+            name: product.name,
+            slug: product.slug,
+            price,
+            category: product.mainCategory.replace(/_/g, " "),
+            style: product.subCategory.replace(/_/g, " "),
+            color: product.color,
+            fabric: product.fabric,
+            sku: product.slug,
+          })}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackEvent("whatsapp_click", { productId: product.id })}

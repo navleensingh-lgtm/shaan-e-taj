@@ -181,10 +181,23 @@ export function AdminProducts() {
     }
   }
 
-  async function archive(id: string) {
-    if (!confirm("Archive this product? It will be hidden from the shop.")) return;
-    await apiFetch(`/admin/products/${id}`, { method: "DELETE" });
-    load();
+  async function removeProduct(id: string, name: string) {
+    const ok = confirm(
+      `Are you sure you want to delete this product?\n\n"${name}" will be removed from the shop, catalog, search, and new arrivals.\n\nThis cannot be undone from the admin panel.`
+    );
+    if (!ok) return;
+    try {
+      await apiFetch(`/admin/products/${id}`, { method: "DELETE" });
+      if (editingId === id) {
+        setShowForm(false);
+        setEditingId(null);
+        setForm(emptyForm);
+      }
+      setSyncMsg("Product deleted from storefront.");
+      load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Delete failed");
+    }
   }
 
   return (
@@ -449,10 +462,10 @@ export function AdminProducts() {
                     </button>
                     <button
                       type="button"
-                      className="text-brand-subtle underline"
-                      onClick={() => archive(p.id)}
+                      className="text-rose underline hover:text-rose-dark"
+                      onClick={() => removeProduct(p.id, p.name)}
                     >
-                      Archive
+                      Delete
                     </button>
                   </td>
                 </tr>

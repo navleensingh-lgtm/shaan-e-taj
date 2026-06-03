@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { orderMessage, whatsAppUrl } from "@/lib/whatsapp";
+import { orderWhatsAppUrl } from "@/lib/whatsapp";
 import { trackEvent } from "@/lib/api";
 
 type Product = {
@@ -10,6 +10,7 @@ type Product = {
   slug: string;
   name: string;
   mainCategory: string;
+  subCategory?: string;
   fabric?: string | null;
   color?: string | null;
   priceInPaise: number;
@@ -54,16 +55,16 @@ export function StitchingOptions({ product }: { product: Product }) {
           Order Now
         </button>
         <a
-          href={whatsAppUrl(
-            orderMessage({
-              name: product.name,
-              slug: product.slug,
-              category: product.mainCategory.replace(/_/g, " "),
-              price,
-              fabric: product.fabric,
-              color: product.color,
-            })
-          )}
+          href={orderWhatsAppUrl({
+            name: product.name,
+            slug: product.slug,
+            price,
+            category: product.mainCategory.replace(/_/g, " "),
+            style: product.subCategory?.replace(/_/g, " "),
+            fabric: product.fabric,
+            color: product.color,
+            sku: product.slug,
+          })}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackEvent("whatsapp_click", { productId: product.id })}

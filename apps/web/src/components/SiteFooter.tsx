@@ -124,6 +124,10 @@ export async function SiteFooter() {
 
         <p className="mt-5 border-t border-white/10 pt-4 text-[10px] leading-relaxed text-brand-subtle sm:text-xs">
           © {new Date().getFullYear()} {siteConfig.brand} · {fullAddress}
+          {" · "}
+          <Link href="/admin/login" className="text-gold/80 underline hover:text-gold">
+            Staff Login
+          </Link>
         </p>
       </div>
     </footer>

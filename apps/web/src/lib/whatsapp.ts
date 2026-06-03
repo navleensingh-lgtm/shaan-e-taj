@@ -8,28 +8,53 @@ export function whatsAppUrl(message: string): string {
 }
 
 export function productPageUrl(slug: string): string {
-  return `${SITE_URL.replace(/\/$/, "")}/product/${slug}`;
+  const base =
+    typeof window !== "undefined" ? window.location.origin : SITE_URL.replace(/\/$/, "");
+  return `${base}/product/${slug}`;
 }
 
-export function orderMessage(product: {
+export type OrderProductInput = {
   name: string;
-  slug?: string;
-  category: string;
+  slug: string;
   price: number;
+  category?: string;
+  style?: string | null;
   color?: string | null;
   fabric?: string | null;
-}): string {
+  quantity?: number;
+  sku?: string | null;
+  productUrl?: string;
+};
+
+export function orderMessage(product: OrderProductInput): string {
+  const link = product.productUrl ?? productPageUrl(product.slug);
+  const sku = product.sku?.trim() || product.slug;
+
   const lines = [
-    "Hi Shaan-e-Taj, I want to order:",
+    "Hello, I would like to order this product:",
     "",
-    `*${product.name}*`,
-    product.slug ? `Link: ${productPageUrl(product.slug)}` : "",
-    `Category: ${product.category}`,
-    product.fabric ? `Fabric: ${product.fabric}` : "",
-    product.color ? `Color: ${product.color}` : "",
+    `Product: ${product.name}`,
     `Price: ₹${product.price.toLocaleString("en-IN")}`,
+    product.style ? `Style: ${product.style}` : "",
+    product.color ? `Color: ${product.color}` : "",
+    product.fabric ? `Fabric: ${product.fabric}` : "",
+    product.category ? `Category: ${product.category}` : "",
+    product.quantity && product.quantity > 1 ? `Quantity: ${product.quantity}` : "",
+    sku ? `SKU: ${sku}` : "",
     "",
-    "Please share availability and delivery details.",
+    "Product Link:",
+    link,
   ].filter(Boolean);
+
   return lines.join("\n");
+}
+
+/** Build WhatsApp order URL with canonical product page link (client-safe). */
+export function orderWhatsAppUrl(product: OrderProductInput): string {
+  return whatsAppUrl(
+    orderMessage({
+      ...product,
+      productUrl: productPageUrl(product.slug),
+    })
+  );
 }

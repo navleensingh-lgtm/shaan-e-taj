@@ -1,6 +1,10 @@
 /** Brand & contact — Taj Fashion Jalandhar / Shaan-e-Taj */
 export const siteConfig = {
   brand: "Shaan-e-Taj",
+  /** Default browser tab title */
+  pageTitle: "Shaan-e-Taj | Luxury Indian Couture",
+  /** Child pages: "Catalog | Shaan-e-Taj" */
+  pageTitleTemplate: "%s | Shaan-e-Taj",
   legalName: "Taj Fashion Jalandhar",
   tagline: "Luxury Indian Couture",
   subtitle: "Taj Fashion aKa Shaan-e-taj",

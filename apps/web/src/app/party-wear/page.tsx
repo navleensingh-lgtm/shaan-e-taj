@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import { CollectionPage } from "@/components/CollectionPage";
 
+export const metadata: Metadata = { title: "Party Wear" };
 export const dynamic = "force-dynamic";
 
 export default function PartyWearPage() {

@@ -19,19 +19,45 @@ const jost = Jost({
   weight: ["300", "400", "500"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.shaanetaj.com";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.shaanetaj.com"
-  ),
-  title: `${siteConfig.brand} | ${siteConfig.tagline} — Jalandhar`,
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: siteConfig.pageTitle,
+    template: siteConfig.pageTitleTemplate,
+  },
   description: siteConfig.description,
+  applicationName: siteConfig.brand,
+  authors: [{ name: siteConfig.brand }],
+  creator: siteConfig.brand,
+  icons: {
+    icon: [{ url: "/icon", type: "image/png", sizes: "32x32" }],
+    apple: [{ url: "/apple-icon", type: "image/png", sizes: "180x180" }],
+  },
   openGraph: {
     siteName: siteConfig.brand,
     locale: "en_IN",
     type: "website",
-    title: `${siteConfig.brand} — Taj Fashion Jalandhar`,
+    title: siteConfig.pageTitle,
     description: siteConfig.description,
+    url: siteUrl,
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: siteConfig.pageTitle,
+      },
+    ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.pageTitle,
+    description: siteConfig.description,
+    images: ["/opengraph-image"],
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({

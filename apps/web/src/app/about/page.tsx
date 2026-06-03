@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { siteConfig } from "@/lib/site-config";
+
+export const metadata: Metadata = { title: "About" };
 import { SocialLinks } from "@/components/SocialLinks";
 
 export default function AboutPage() {

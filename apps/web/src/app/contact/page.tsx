@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { siteConfig } from "@/lib/site-config";
 import { getPublicStoreSettings, formatStoreAddress } from "@/lib/store-settings";
 import { SocialLinks } from "@/components/SocialLinks";
 import { ContactWhatsAppButton } from "@/components/ContactWhatsAppButton";
+
+export const metadata: Metadata = { title: "Contact" };
 
 export default async function ContactPage() {
   const store = await getPublicStoreSettings();

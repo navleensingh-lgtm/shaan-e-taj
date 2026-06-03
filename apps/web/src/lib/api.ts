@@ -33,7 +33,7 @@ export async function fetchProducts(params?: Record<string, string>) {
   try {
     const qs = params ? `?${new URLSearchParams(params)}` : "";
     const res = await fetch(`${apiBaseUrl()}/api/products${qs}`, {
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!res.ok) return empty;
     return (await res.json()) as { items: Product[]; total: number };

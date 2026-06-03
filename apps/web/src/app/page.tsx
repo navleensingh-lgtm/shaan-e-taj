@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ProductGrid } from "@/components/ProductGrid";
+
+export const dynamic = "force-dynamic";
 import { HomeOrderCTA } from "@/components/HomeOrderCTA";
 import { YouTubeSection } from "@/components/YouTubeSection";
 import { SocialLinks } from "@/components/SocialLinks";

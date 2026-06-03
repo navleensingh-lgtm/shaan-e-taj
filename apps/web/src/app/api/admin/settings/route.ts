@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@shaan-e-taj/database";
 import { requireAdminSession } from "@/lib/admin-auth";
+import { revalidateShop } from "@/lib/revalidate-shop";
 
 export async function GET() {
   if (!(await requireAdminSession())) {
@@ -20,5 +21,6 @@ export async function PATCH(req: Request) {
     create: { id: "default", ...body },
     update: body,
   });
+  revalidateShop();
   return NextResponse.json(settings);
 }

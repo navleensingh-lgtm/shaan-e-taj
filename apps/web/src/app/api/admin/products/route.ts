@@ -8,6 +8,7 @@ import {
 } from "@shaan-e-taj/database";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { slugify } from "@/lib/slug";
+import { revalidateShop } from "@/lib/revalidate-shop";
 
 export async function GET() {
   if (!(await requireAdminSession())) {
@@ -76,5 +77,6 @@ export async function POST(req: Request) {
     include: { images: true },
   });
 
+  revalidateShop();
   return NextResponse.json({ product });
 }

@@ -11,7 +11,7 @@ function apiBase(): string {
 
 async function getProduct(slug: string) {
   try {
-    const res = await fetch(`${apiBase()}/api/products/${slug}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${apiBase()}/api/products/${slug}`, { cache: "no-store" });
     if (!res.ok) return null;
     return res.json();
   } catch {

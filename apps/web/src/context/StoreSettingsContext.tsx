@@ -9,7 +9,7 @@ export function StoreSettingsProvider({ children }: { children: React.ReactNode 
   const [settings, setSettings] = useState<PublicStoreSettings | null>(null);
 
   useEffect(() => {
-    fetch("/api/settings/public")
+    fetch("/api/settings/public", { cache: "no-store" })
       .then((r) => r.json())
       .then(setSettings)
       .catch(() => null);

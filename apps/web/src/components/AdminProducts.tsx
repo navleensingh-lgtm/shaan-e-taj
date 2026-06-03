@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/lib/api-client";
+import { apiFetch, uploadAdminImage } from "@/lib/api-client";
 
 type ProductRow = {
   id: string;
@@ -57,6 +57,29 @@ export function AdminProducts() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [showForm, setShowForm] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [syncMsg, setSyncMsg] = useState("");
+
+  async function onImageFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setSyncMsg("");
+    try {
+      const { url, storage } = await uploadAdminImage(file);
+      setForm((f) => ({ ...f, imageUrl: url }));
+      setSyncMsg(
+        storage === "r2"
+          ? "Photo uploaded to cloud. Click Update/Publish to show on website."
+          : "Photo saved. Click Update/Publish — then refresh shop page."
+      );
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
 
   function load() {
     apiFetch("/admin/products").then((d) => setProducts(d.products ?? []));
@@ -94,6 +117,15 @@ export function AdminProducts() {
   }
 
   async function save() {
+    if (!form.name.trim()) {
+      alert("Product name is required");
+      return;
+    }
+    if (!form.imageUrl && !editingId) {
+      alert("Please upload a photo first (button below).");
+      return;
+    }
+
     const payload = {
       name: form.name,
       slug: form.slug || undefined,
@@ -128,6 +160,7 @@ export function AdminProducts() {
     setShowForm(false);
     setEditingId(null);
     setForm(emptyForm);
+    setSyncMsg("Saved — website updated. Open Catalog to verify.");
     load();
   }
 
@@ -139,11 +172,19 @@ export function AdminProducts() {
 
   return (
     <div className="mt-12 border border-brand-border bg-white p-6">
+      {syncMsg && (
+        <p className="mb-4 rounded-sm border border-rose/40 bg-rose/10 px-4 py-3 text-sm text-rose-dark">
+          {syncMsg}{" "}
+          <a href="/catalog" target="_blank" rel="noopener noreferrer" className="underline">
+            View shop →
+          </a>
+        </p>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="serif text-2xl">Collections & Products</h2>
           <p className="mt-1 text-sm text-brand-muted">
-            Add suits, change prices, sale/MRP, out of stock, new arrivals.
+            Upload photo → fill details → Publish. Changes sync to website instantly.
           </p>
         </div>
         <button
@@ -245,14 +286,40 @@ export function AdminProducts() {
                 onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
               />
             </label>
-            <label className="text-sm md:col-span-2">
-              Image URL (paste link from phone/Telegram/cloud)
+            <div className="md:col-span-2 rounded-sm border border-brand-border bg-white p-4">
+              <p className="text-sm font-medium text-brand-text">Product photo *</p>
+              <p className="mt-1 text-xs text-brand-muted">
+                Upload from phone/gallery (JPG/PNG, max 4 MB). Customers see this on catalog.
+              </p>
               <input
-                className="mt-1 w-full border px-3 py-2"
-                value={form.imageUrl}
-                onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                disabled={uploading}
+                onChange={onImageFile}
+                className="mt-3 block w-full text-sm"
               />
-            </label>
+              {uploading && <p className="mt-2 text-sm text-rose">Uploading…</p>}
+              {form.imageUrl && (
+                <div className="mt-4 flex flex-wrap items-start gap-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={form.imageUrl}
+                    alt="Preview"
+                    className="h-40 w-32 rounded-sm object-cover border"
+                  />
+                  <p className="max-w-xs break-all text-xs text-brand-subtle">{form.imageUrl.slice(0, 80)}…</p>
+                </div>
+              )}
+              <label className="mt-4 block text-xs text-brand-muted">
+                Or paste image link
+                <input
+                  className="mt-1 w-full border px-3 py-2 text-sm"
+                  value={form.imageUrl}
+                  onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
+                  placeholder="https://..."
+                />
+              </label>
+            </div>
             <label className="text-sm md:col-span-2">
               Description
               <textarea

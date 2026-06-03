@@ -7,6 +7,7 @@ import {
   type Prisma,
 } from "@shaan-e-taj/database";
 import { requireAdminSession } from "@/lib/admin-auth";
+import { revalidateShop } from "@/lib/revalidate-shop";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -68,6 +69,7 @@ export async function PATCH(req: Request, { params }: Params) {
     include: { images: true },
   });
 
+  revalidateShop();
   return NextResponse.json({ product: updated });
 }
 
@@ -80,5 +82,6 @@ export async function DELETE(_req: Request, { params }: Params) {
     where: { id },
     data: { status: ProductStatus.ARCHIVED, inStock: false },
   });
+  revalidateShop();
   return NextResponse.json({ ok: true });
 }

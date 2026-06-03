@@ -49,7 +49,7 @@ export function CatalogClient({
     if (f.occasion) params.set("occasion", f.occasion);
     if (f.inStock) params.set("inStock", f.inStock);
 
-    const res = await fetch(`/api/products?${params}`);
+    const res = await fetch(`/api/products?${params}`, { cache: "no-store" });
     const data = await res.json();
     setProducts(data.items ?? []);
     setTotal(data.total ?? 0);

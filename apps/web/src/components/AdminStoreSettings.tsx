@@ -25,6 +25,7 @@ type Settings = {
 export function AdminStoreSettings() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [saved, setSaved] = useState(false);
+  const [syncNote, setSyncNote] = useState("");
 
   useEffect(() => {
     apiFetch("/admin/settings").then(setSettings).catch(console.error);
@@ -37,7 +38,11 @@ export function AdminStoreSettings() {
       body: JSON.stringify(settings),
     });
     setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setSyncNote("Saved! Contact page & footer updated — refresh shop if needed.");
+    setTimeout(() => {
+      setSaved(false);
+      setSyncNote("");
+    }, 8000);
   }
 
   if (!settings) return <p className="text-sm text-brand-muted">Loading store settings…</p>;
@@ -74,6 +79,14 @@ export function AdminStoreSettings() {
 
   return (
     <div className="space-y-8">
+      {syncNote && (
+        <p className="rounded-sm border border-rose/40 bg-rose/10 px-4 py-3 text-sm text-rose-dark">
+          {syncNote}{" "}
+          <a href="/contact" target="_blank" rel="noopener noreferrer" className="underline">
+            Check contact page →
+          </a>
+        </p>
+      )}
       <div>
         <h2 className="serif text-2xl">Store & Contact</h2>
         <p className="mt-1 text-sm text-brand-muted">

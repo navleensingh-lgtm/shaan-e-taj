@@ -25,6 +25,10 @@ export const metadata: Metadata = {
   ),
   title: `${siteConfig.brand} | ${siteConfig.tagline} — Jalandhar`,
   description: siteConfig.description,
+  icons: {
+    icon: "/icon.svg",
+    apple: "/logo.svg",
+  },
   openGraph: {
     siteName: siteConfig.brand,
     locale: "en_IN",

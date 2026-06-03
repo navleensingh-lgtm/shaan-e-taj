@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api-client";
 import { AdminOrders } from "@/components/AdminOrders";
 import { AdminProducts } from "@/components/AdminProducts";
 import { AdminStoreSettings } from "@/components/AdminStoreSettings";
+import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 
 type Tab = "products" | "store" | "orders" | "overview";
 
@@ -61,10 +62,16 @@ export default function AdminPage() {
 
   return (
     <section className="mx-auto max-w-6xl px-5 py-12 lg:px-8">
-      <h1 className="serif text-4xl">Admin</h1>
-      <p className="mt-2 text-sm text-brand-muted">
-        Manage collections, prices, stock, address, WhatsApp & orders.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="serif text-4xl">Admin</h1>
+          <p className="mt-2 text-sm text-brand-muted">
+            Manage collections, prices, stock, address, WhatsApp & orders.
+          </p>
+          <p className="mt-1 text-xs text-brand-subtle">{session.user?.email}</p>
+        </div>
+        <AdminLogoutButton />
+      </div>
 
       <nav className="mt-8 flex flex-wrap gap-2 border-b border-brand-border pb-4">
         {tabs.map(({ id, label }) => (

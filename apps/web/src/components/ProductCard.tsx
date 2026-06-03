@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Product } from "@/lib/api";
 import { orderWhatsAppUrl } from "@/lib/whatsapp";
+import { calculateOrderPricing } from "@/lib/order-pricing";
 import { trackEvent } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
+import { useStoreSettings } from "@/context/StoreSettingsContext";
 import { WishlistButton } from "./WishlistButton";
 import { ProductShareButton } from "./ProductShareButton";
 
@@ -15,11 +17,20 @@ type Props = { product: Product };
 export function ProductCard({ product }: Props) {
   const { addItem } = useCart();
   const router = useRouter();
+  const settings = useStoreSettings();
   const img = product.images.find((i) => i.isPrimary) ?? product.images[0];
   const price = product.priceInPaise / 100;
   const mrp = product.compareAtPaise ? product.compareAtPaise / 100 : null;
   const onSale = mrp != null && mrp > price;
   const outOfStock = product.inStock === false;
+
+  const whatsappPricing =
+    settings &&
+    calculateOrderPricing(product.priceInPaise, "UNSTITCHED", {
+      fullStitchChargePaise: settings.fullStitchChargePaise,
+      shippingFree: settings.shippingFree,
+      shippingChargePaise: settings.shippingChargePaise,
+    });
 
   function orderNow() {
     addItem({
@@ -91,12 +102,16 @@ export function ProductCard({ product }: Props) {
           href={orderWhatsAppUrl({
             name: product.name,
             slug: product.slug,
-            price,
+            price: price,
             category: product.mainCategory.replace(/_/g, " "),
             style: product.subCategory.replace(/_/g, " "),
             color: product.color,
             fabric: product.fabric,
             sku: product.slug,
+            stitchingType: "UNSTITCHED",
+            stitchingCharge: 0,
+            shippingCharge: whatsappPricing ? whatsappPricing.shippingPaise / 100 : 0,
+            totalPrice: whatsappPricing ? whatsappPricing.totalPaise / 100 : price,
           })}
           target="_blank"
           rel="noopener noreferrer"

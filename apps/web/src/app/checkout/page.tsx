@@ -5,8 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
+import { useOrderPricing } from "@/hooks/useOrderPricing";
+import { useStoreSettings } from "@/context/StoreSettingsContext";
 import { apiFetch } from "@/lib/api-client";
 import { AddressFields } from "@/components/AddressFields";
+import { OrderPricingSummary } from "@/components/OrderPricingSummary";
+import { StitchingSelector } from "@/components/StitchingSelector";
 import { emptyAddress, validateAddress, type AddressInput } from "@/lib/checkout-address";
 
 declare global {
@@ -15,16 +19,12 @@ declare global {
   }
 }
 
-const STITCHING = [
-  { value: "", label: "Unstitched" },
-  { value: "FULLY_STITCHED", label: "Fully Stitched" },
-] as const;
-
 export default function CheckoutPage() {
   const { data: session, status } = useSession();
-  const { items, clear, totalPaise } = useCart();
+  const { items, clear, stitchingType, setStitchingType } = useCart();
+  const pricing = useOrderPricing();
+  const settings = useStoreSettings();
   const router = useRouter();
-  const [stitching, setStitching] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [shipping, setShipping] = useState<AddressInput>(emptyAddress());
@@ -89,7 +89,7 @@ export default function CheckoutPage() {
         method: "POST",
         body: JSON.stringify({
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
-          stitchingType: stitching || undefined,
+          stitchingType,
           notes: orderNotes.trim() || undefined,
           shipping,
           billing: billingAddr,
@@ -197,22 +197,14 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-brand-muted">Stitching</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {STITCHING.map((s) => (
-              <button
-                key={s.value}
-                type="button"
-                onClick={() => setStitching(s.value)}
-                className={`rounded-sm border px-3 py-2 text-sm ${
-                  stitching === s.value ? "border-rose bg-rose text-white" : "border-brand-border"
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
+        <div className="rounded-sm border border-brand-border bg-white p-6">
+          <StitchingSelector
+            value={stitchingType}
+            onChange={setStitchingType}
+            stitchChargeRupees={
+              settings ? settings.fullStitchChargePaise / 100 : undefined
+            }
+          />
         </div>
 
         <label className="block text-sm">
@@ -226,11 +218,15 @@ export default function CheckoutPage() {
           />
         </label>
 
-        <div className="border-t border-brand-border pt-6">
-          <p className="text-lg font-medium text-rose-dark">
-            Order total: ₹{(totalPaise / 100).toLocaleString("en-IN")}
-          </p>
-          <p className="mt-1 text-xs text-brand-subtle">{items.length} item(s) in cart</p>
+        <div className="rounded-sm border border-brand-border bg-white p-6">
+          <OrderPricingSummary
+            subtotalPaise={pricing.subtotalPaise}
+            stitchingPaise={pricing.stitchingPaise}
+            shippingPaise={pricing.shippingPaise}
+            totalPaise={pricing.totalPaise}
+            stitchingType={stitchingType}
+          />
+          <p className="mt-2 text-xs text-brand-subtle">{items.length} item(s) in cart</p>
         </div>
 
         {error && <p className="text-sm text-rose">{error}</p>}

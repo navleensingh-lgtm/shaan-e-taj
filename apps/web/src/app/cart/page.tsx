@@ -3,16 +3,25 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { useOrderPricing } from "@/hooks/useOrderPricing";
+import { useStoreSettings } from "@/context/StoreSettingsContext";
+import { OrderPricingSummary } from "@/components/OrderPricingSummary";
+import { StitchingSelector } from "@/components/StitchingSelector";
 
 export default function CartPage() {
-  const { items, updateQty, removeItem, totalPaise, count } = useCart();
+  const { items, updateQty, removeItem, stitchingType, setStitchingType, count } = useCart();
+  const pricing = useOrderPricing();
+  const settings = useStoreSettings();
 
   return (
     <section className="mx-auto max-w-3xl px-5 py-16">
       <h1 className="serif text-4xl">Cart ({count})</h1>
       {items.length === 0 ? (
         <p className="mt-8 text-brand-muted">
-          Your cart is empty. <Link href="/catalog" className="text-rose underline">Browse catalog</Link>
+          Your cart is empty.{" "}
+          <Link href="/catalog" className="text-rose underline">
+            Browse catalog
+          </Link>
         </p>
       ) : (
         <>
@@ -29,7 +38,7 @@ export default function CartPage() {
                     {item.name}
                   </Link>
                   <p className="text-rose-dark">
-                    ₹{(item.priceInPaise / 100).toLocaleString("en-IN")}
+                    ₹{(item.priceInPaise / 100).toLocaleString("en-IN")} each
                   </p>
                   <div className="mt-2 flex items-center gap-2">
                     <button
@@ -59,12 +68,27 @@ export default function CartPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-8 text-right text-xl font-medium text-rose-dark">
-            Total: ₹{(totalPaise / 100).toLocaleString("en-IN")}
-          </p>
+
+          <div className="mt-8 space-y-6 rounded-sm border border-brand-border bg-white p-5">
+            <StitchingSelector
+              value={stitchingType}
+              onChange={setStitchingType}
+              stitchChargeRupees={
+                settings ? settings.fullStitchChargePaise / 100 : undefined
+              }
+            />
+            <OrderPricingSummary
+              subtotalPaise={pricing.subtotalPaise}
+              stitchingPaise={pricing.stitchingPaise}
+              shippingPaise={pricing.shippingPaise}
+              totalPaise={pricing.totalPaise}
+              stitchingType={stitchingType}
+            />
+          </div>
+
           <Link
             href="/checkout"
-            className="mt-4 block w-full rounded-sm bg-rose py-4 text-center text-[11px] uppercase tracking-wider text-white"
+            className="mt-6 block w-full rounded-sm bg-rose py-4 text-center text-[11px] uppercase tracking-wider text-white"
           >
             Proceed to Checkout
           </Link>

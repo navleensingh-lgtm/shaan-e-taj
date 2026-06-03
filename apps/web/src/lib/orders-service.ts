@@ -5,6 +5,8 @@ import {
   shippingToOrderFields,
   validateAddress,
 } from "@/lib/checkout-address";
+import { calculateOrderPricing, type StitchingChoice } from "@/lib/order-pricing";
+import { getPricingSettings } from "@/lib/store-settings";
 import { createRazorpayOrder, verifyPaymentSignature } from "@/lib/razorpay";
 
 function orderNumber() {
@@ -13,13 +15,17 @@ function orderNumber() {
 
 export type CheckoutBody = {
   items: { productId: string; quantity: number }[];
-  stitchingType?: StitchingType;
+  stitchingType?: StitchingType | StitchingChoice;
   measurements?: Record<string, number>;
   notes?: string;
   shipping: AddressInput;
   billing: AddressInput;
   billingSameAsShipping: boolean;
 };
+
+function normalizeStitching(type?: string | null): StitchingChoice {
+  return type === "FULLY_STITCHED" ? "FULLY_STITCHED" : "UNSTITCHED";
+}
 
 export async function createCheckoutOrder(userId: string, body: CheckoutBody) {
   const shipErr = validateAddress(body.shipping, "Shipping");
@@ -31,7 +37,9 @@ export async function createCheckoutOrder(userId: string, body: CheckoutBody) {
 
   if (!body.items?.length) throw new Error("Cart is empty");
 
-  const settings = await prisma.siteSettings.findUnique({ where: { id: "default" } });
+  const pricingSettings = await getPricingSettings();
+  const stitchingChoice = normalizeStitching(body.stitchingType);
+
   const products = await prisma.product.findMany({
     where: { id: { in: body.items.map((i) => i.productId) }, inStock: true },
   });
@@ -43,12 +51,7 @@ export async function createCheckoutOrder(userId: string, body: CheckoutBody) {
   for (const line of body.items) {
     const p = products.find((x) => x.id === line.productId);
     if (!p) continue;
-    let unit = p.priceInPaise;
-    if (body.stitchingType === "FULLY_STITCHED" && p.fullyStitchedPricePaise) {
-      unit = p.fullyStitchedPricePaise;
-    } else if (body.stitchingType === "FULLY_STITCHED") {
-      unit += settings?.fullStitchChargePaise ?? 80000;
-    }
+    const unit = p.priceInPaise;
     subtotalPaise += unit * line.quantity;
     lineItems.push({
       productId: p.id,
@@ -60,7 +63,7 @@ export async function createCheckoutOrder(userId: string, body: CheckoutBody) {
 
   if (!lineItems.length) throw new Error("No valid in-stock products in cart");
 
-  const totalPaise = subtotalPaise;
+  const pricing = calculateOrderPricing(subtotalPaise, stitchingChoice, pricingSettings);
   const receipt = orderNumber();
 
   const order = await prisma.order.create({
@@ -68,11 +71,13 @@ export async function createCheckoutOrder(userId: string, body: CheckoutBody) {
       orderNumber: receipt,
       userId,
       guestPhone: body.shipping.phone.replace(/\D/g, "").slice(-10),
-      stitchingType: body.stitchingType ?? null,
+      stitchingType: stitchingChoice === "FULLY_STITCHED" ? "FULLY_STITCHED" : "UNSTITCHED",
       measurements: body.measurements ?? undefined,
-      subtotalPaise,
-      stitchingPaise: 0,
-      totalPaise,
+      subtotalPaise: pricing.subtotalPaise,
+      stitchingPaise: pricing.stitchingPaise,
+      shippingPaise: pricing.shippingPaise,
+      shippingType: pricing.shippingType,
+      totalPaise: pricing.totalPaise,
       notes: body.notes,
       ...shippingToOrderFields(body.shipping),
       ...billingToOrderFields(billingAddr),
@@ -81,7 +86,7 @@ export async function createCheckoutOrder(userId: string, body: CheckoutBody) {
     include: { items: true },
   });
 
-  const rzOrder = await createRazorpayOrder(totalPaise, receipt);
+  const rzOrder = await createRazorpayOrder(pricing.totalPaise, receipt);
   await prisma.order.update({
     where: { id: order.id },
     data: { razorpayOrderId: rzOrder.id },
@@ -90,10 +95,11 @@ export async function createCheckoutOrder(userId: string, body: CheckoutBody) {
   return {
     orderId: order.id,
     orderNumber: order.orderNumber,
-    amountPaise: totalPaise,
+    amountPaise: pricing.totalPaise,
     razorpayOrderId: rzOrder.id,
     razorpayKeyId: process.env.RAZORPAY_KEY_ID ?? null,
     mock: "mock" in rzOrder,
+    pricing,
   };
 }
 

@@ -237,6 +237,8 @@ model Order {
   measurements    Json?
   subtotalPaise   Int
   stitchingPaise  Int         @default(0)
+  shippingPaise   Int         @default(0)
+  shippingType    String?
   totalPaise      Int
   razorpayOrderId String?
   razorpayPaymentId String?
@@ -298,6 +300,8 @@ model SiteSettings {
   id                    String  @id @default("default")
   semiStitchChargePaise Int     @default(50000)
   fullStitchChargePaise Int     @default(80000)
+  shippingFree          Boolean @default(true)
+  shippingChargePaise   Int     @default(0)
   autoPostInstagram     Boolean @default(false)
   autoPostFacebook      Boolean @default(false)
   watermarkEnabled      Boolean @default(true)

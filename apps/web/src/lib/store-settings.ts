@@ -1,7 +1,8 @@
 import { prisma } from "@shaan-e-taj/database";
 import { siteConfig } from "@/lib/site-config";
+import type { PricingSettings } from "@/lib/order-pricing";
 
-export type PublicStoreSettings = {
+export type PublicStoreSettings = PricingSettings & {
   whatsappNumber: string;
   storeAddressLine1: string;
   storeAddressLine2: string;
@@ -14,7 +15,6 @@ export type PublicStoreSettings = {
   youtubeUrl: string;
   instagramUrl: string;
   semiStitchChargePaise: number;
-  fullStitchChargePaise: number;
 };
 
 const defaults: PublicStoreSettings = {
@@ -32,6 +32,8 @@ const defaults: PublicStoreSettings = {
   instagramUrl: siteConfig.social.instagram,
   semiStitchChargePaise: 50000,
   fullStitchChargePaise: 80000,
+  shippingFree: true,
+  shippingChargePaise: 0,
 };
 
 export async function getPublicStoreSettings(): Promise<PublicStoreSettings> {
@@ -52,6 +54,8 @@ export async function getPublicStoreSettings(): Promise<PublicStoreSettings> {
       instagramUrl: row.instagramUrl || defaults.instagramUrl,
       semiStitchChargePaise: row.semiStitchChargePaise,
       fullStitchChargePaise: row.fullStitchChargePaise,
+      shippingFree: row.shippingFree ?? true,
+      shippingChargePaise: row.shippingChargePaise ?? 0,
     };
   } catch {
     return defaults;
@@ -62,4 +66,13 @@ export function formatStoreAddress(s: PublicStoreSettings): string {
   return [s.storeAddressLine1, s.storeAddressLine2, s.storeLandmark, s.storePincode]
     .filter(Boolean)
     .join(", ");
+}
+
+export async function getPricingSettings(): Promise<PricingSettings> {
+  const s = await getPublicStoreSettings();
+  return {
+    fullStitchChargePaise: s.fullStitchChargePaise,
+    shippingFree: s.shippingFree,
+    shippingChargePaise: s.shippingChargePaise,
+  };
 }

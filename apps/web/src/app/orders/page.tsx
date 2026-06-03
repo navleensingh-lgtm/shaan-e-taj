@@ -13,6 +13,9 @@ type Order = {
   orderNumber: string;
   status: string;
   totalPaise: number;
+  subtotalPaise?: number;
+  stitchingPaise?: number;
+  shippingPaise?: number;
   createdAt: string;
   stitchingType?: string | null;
   trackingNumber?: string | null;
@@ -130,6 +133,16 @@ export default function OrdersPage() {
               <p className="mt-2 font-medium text-rose-dark">
                 ₹{(o.totalPaise / 100).toLocaleString("en-IN")}
               </p>
+              {(o.stitchingPaise ?? 0) > 0 || (o.shippingPaise ?? 0) > 0 ? (
+                <p className="mt-1 text-xs text-brand-subtle">
+                  Subtotal ₹{((o.subtotalPaise ?? o.totalPaise) / 100).toLocaleString("en-IN")}
+                  {(o.stitchingPaise ?? 0) > 0 &&
+                    ` · Stitching ₹${((o.stitchingPaise ?? 0) / 100).toLocaleString("en-IN")}`}
+                  {(o.shippingPaise ?? 0) > 0
+                    ? ` · Shipping ₹${((o.shippingPaise ?? 0) / 100).toLocaleString("en-IN")}`
+                    : " · Shipping Free"}
+                </p>
+              ) : null}
               {o.stitchingType && (
                 <p className="mt-1 text-xs text-brand-muted">
                   Stitching: {o.stitchingType.replace(/_/g, " ")}

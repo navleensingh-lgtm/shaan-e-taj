@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import type { StitchingChoice } from "@/lib/order-pricing";
 
 export type CartLine = {
   productId: string;
@@ -20,24 +21,31 @@ export type CartLine = {
 
 type CartContextValue = {
   items: CartLine[];
+  stitchingType: StitchingChoice;
+  setStitchingType: (type: StitchingChoice) => void;
   addItem: (item: Omit<CartLine, "quantity">, qty?: number) => void;
   removeItem: (productId: string) => void;
   updateQty: (productId: string, quantity: number) => void;
   clear: () => void;
+  /** Sum of base product prices × qty (excludes stitching & shipping). */
   totalPaise: number;
   count: number;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 const KEY = "shaanetaj_cart";
+const STITCH_KEY = "shaanetaj_stitching";
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartLine[]>([]);
+  const [stitchingType, setStitchingTypeState] = useState<StitchingChoice>("UNSTITCHED");
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) setItems(JSON.parse(raw));
+      const st = localStorage.getItem(STITCH_KEY);
+      if (st === "FULLY_STITCHED" || st === "UNSTITCHED") setStitchingTypeState(st);
     } catch {
       /* ignore */
     }
@@ -46,6 +54,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem(KEY, JSON.stringify(items));
   }, [items]);
+
+  const setStitchingType = useCallback((type: StitchingChoice) => {
+    setStitchingTypeState(type);
+    localStorage.setItem(STITCH_KEY, type);
+  }, []);
 
   const addItem = useCallback((item: Omit<CartLine, "quantity">, qty = 1) => {
     setItems((prev) => {
@@ -73,7 +86,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
-  const clear = useCallback(() => setItems([]), []);
+  const clear = useCallback(() => {
+    setItems([]);
+    setStitchingTypeState("UNSTITCHED");
+    localStorage.removeItem(STITCH_KEY);
+  }, []);
 
   const totalPaise = useMemo(
     () => items.reduce((s, i) => s + i.priceInPaise * i.quantity, 0),
@@ -87,6 +104,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(
     () => ({
       items,
+      stitchingType,
+      setStitchingType,
       addItem,
       removeItem,
       updateQty,
@@ -94,7 +113,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       totalPaise,
       count,
     }),
-    [items, addItem, removeItem, updateQty, clear, totalPaise, count]
+    [items, stitchingType, setStitchingType, addItem, removeItem, updateQty, clear, totalPaise, count]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

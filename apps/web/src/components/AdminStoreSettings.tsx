@@ -6,6 +6,8 @@ import { apiFetch } from "@/lib/api-client";
 type Settings = {
   semiStitchChargePaise: number;
   fullStitchChargePaise: number;
+  shippingFree: boolean;
+  shippingChargePaise: number;
   whatsappNumber: string;
   storeAddressLine1: string;
   storeAddressLine2: string;
@@ -109,6 +111,49 @@ export function AdminStoreSettings() {
           {field("Sunday hours", "storeHoursSunday")}
           {field("YouTube channel URL", "youtubeUrl")}
           {field("Instagram URL", "instagramUrl")}
+        </div>
+      </div>
+
+      <div>
+        <h2 className="serif text-2xl">Shipping</h2>
+        <p className="mt-1 text-sm text-brand-muted">
+          Applied once per order at checkout and on WhatsApp quotes.
+        </p>
+        <div className="mt-4 space-y-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="shippingType"
+              checked={s.shippingFree}
+              onChange={() => setSettings((x) => (x ? { ...x, shippingFree: true } : x))}
+            />
+            Free shipping
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="shippingType"
+              checked={!s.shippingFree}
+              onChange={() => setSettings((x) => (x ? { ...x, shippingFree: false } : x))}
+            />
+            Paid shipping
+          </label>
+          {!s.shippingFree && (
+            <label className="block max-w-xs text-sm">
+              Shipping charge (₹)
+              <input
+                type="number"
+                min={0}
+                className="mt-1 w-full border px-3 py-2"
+                value={s.shippingChargePaise / 100}
+                onChange={(e) =>
+                  setSettings((x) =>
+                    x ? { ...x, shippingChargePaise: Number(e.target.value) * 100 } : x
+                  )
+                }
+              />
+            </label>
+          )}
         </div>
       </div>
 

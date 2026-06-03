@@ -27,14 +27,25 @@ export default async function ContactPage() {
               <br />
               PIN: {store.storePincode}
             </p>
-            {store.storePhone && (
-              <p className="mt-2">
-                Phone:{" "}
-                <a href={`tel:${store.storePhone}`} className="text-rose underline">
-                  {store.storePhone}
-                </a>
-              </p>
-            )}
+            <p className="mt-4">
+              <strong className="text-brand-text">Call / WhatsApp</strong>
+              <br />
+              <a
+                href={`tel:+91${store.storePhone || siteConfig.phone}`}
+                className="text-lg text-rose underline"
+              >
+                {store.storePhone || siteConfig.phone}
+              </a>
+              <br />
+              <a
+                href={`https://wa.me/${store.whatsappNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-block text-sm text-[#25D366] underline"
+              >
+                Chat on WhatsApp →
+              </a>
+            </p>
             <a
               href={store.storeMapUrl}
               target="_blank"

@@ -9,7 +9,8 @@ export const siteConfig = {
   state: "Punjab",
   country: "India",
   email: "Navleensingh05@gmail.com",
-  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "919876543210",
+  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "919464385993",
+  phone: "9464385993",
   hours: {
     weekdays: "Mon–Sat 11:00 AM – 7:00 PM",
     sunday: "Sunday: By appointment",

@@ -18,7 +18,7 @@ export type PublicStoreSettings = {
 };
 
 const defaults: PublicStoreSettings = {
-  whatsappNumber: siteConfig.whatsapp.replace(/\D/g, "") || "919876543210",
+  whatsappNumber: siteConfig.whatsapp.replace(/\D/g, "") || "919464385993",
   storeAddressLine1: "120, Gulmarg Ave",
   storeAddressLine2: "Ladhewali",
   storeLandmark: "Jalandhar, Punjab",

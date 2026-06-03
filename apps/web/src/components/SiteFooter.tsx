@@ -21,7 +21,22 @@ export async function SiteFooter() {
             {siteConfig.description}
           </p>
           <div className="mt-5 border-t border-white/10 pt-5">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-gold">Visit us</p>
+            <p className="text-[10px] uppercase tracking-[0.25em] text-gold">Contact</p>
+            <p className="mt-2 text-sm text-brand-subtle">
+              <a href={`tel:+91${store.storePhone || "9464385993"}`} className="hover:text-gold">
+                {store.storePhone || "9464385993"}
+              </a>
+              {" · "}
+              <a
+                href={`https://wa.me/${store.whatsappNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-gold"
+              >
+                WhatsApp
+              </a>
+            </p>
+            <p className="mt-4 text-[10px] uppercase tracking-[0.25em] text-gold">Visit us</p>
             <p className="mt-3 text-sm leading-relaxed text-brand-subtle">
               {store.storeAddressLine1}
               <br />

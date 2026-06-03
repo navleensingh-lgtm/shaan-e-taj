@@ -77,6 +77,6 @@ export async function POST(req: Request) {
     include: { images: true },
   });
 
-  revalidateShop();
+  revalidateShop(product.slug);
   return NextResponse.json({ product });
 }

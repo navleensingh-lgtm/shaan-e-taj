@@ -121,6 +121,11 @@ export function AdminProducts() {
       alert("Product name is required");
       return;
     }
+    const priceNum = Number(form.priceRupees);
+    if (!priceNum || priceNum <= 0) {
+      alert("Enter a valid price in ₹");
+      return;
+    }
     if (!form.imageUrl && !editingId) {
       alert("Please upload a photo first (button below).");
       return;
@@ -132,36 +137,48 @@ export function AdminProducts() {
       description: form.description,
       mainCategory: form.mainCategory,
       subCategory: form.subCategory,
-      priceInPaise: Math.round(Number(form.priceRupees) * 100),
+      priceInPaise: Math.round(priceNum * 100),
       compareAtPaise: form.compareAtRupees
         ? Math.round(Number(form.compareAtRupees) * 100)
         : null,
       badge: form.badge || null,
       fabric: form.fabric || null,
       color: form.color || null,
-      imageUrl: form.imageUrl || undefined,
+      imageUrl: form.imageUrl,
       status: form.status,
       inStock: form.inStock,
       isNewArrival: form.isNewArrival,
     };
 
-    if (editingId) {
-      await apiFetch(`/admin/products/${editingId}`, {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      });
-    } else {
-      await apiFetch("/admin/products", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-    }
+    try {
+      let slug = form.slug;
+      if (editingId) {
+        const res = await apiFetch(`/admin/products/${editingId}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+        slug = res.product?.slug ?? slug;
+      } else {
+        const res = await apiFetch("/admin/products", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        slug = res.product?.slug;
+      }
 
-    setShowForm(false);
-    setEditingId(null);
-    setForm(emptyForm);
-    setSyncMsg("Saved — website updated. Open Catalog to verify.");
-    load();
+      setShowForm(false);
+      setEditingId(null);
+      setForm(emptyForm);
+      setSyncMsg(
+        `Saved! Status: ${payload.status}. ${payload.status === "PUBLISHED" ? "Live on shop now." : "Set Published to show on website."}`
+      );
+      load();
+      if (slug && payload.status === "PUBLISHED") {
+        window.open(`/product/${slug}?t=${Date.now()}`, "_blank");
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Save failed — please try again");
+    }
   }
 
   async function archive(id: string) {
@@ -413,6 +430,16 @@ export function AdminProducts() {
                   <td className="py-3 pr-4">{p.inStock ? "Yes" : "Out"}</td>
                   <td className="py-3 pr-4">{p.status}</td>
                   <td className="py-3">
+                    {p.status === "PUBLISHED" && (
+                      <a
+                        href={`/product/${p.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mr-3 text-gold-dark underline"
+                      >
+                        View
+                      </a>
+                    )}
                     <button
                       type="button"
                       className="mr-3 text-rose underline"

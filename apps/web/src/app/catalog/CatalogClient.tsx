@@ -34,7 +34,7 @@ export function CatalogClient({
     color: "",
     fabric: "",
     occasion: "",
-    inStock: "true",
+    inStock: "",
   });
 
   const load = useCallback(async (query: string, f: typeof filters) => {

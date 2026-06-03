@@ -18,6 +18,15 @@ export async function PATCH(req: Request, { params }: Params) {
 
   const { id } = await params;
   const body = await req.json();
+
+  const existing = await prisma.product.findUnique({
+    where: { id },
+    include: { images: true },
+  });
+  if (!existing) {
+    return NextResponse.json({ error: "Product not found" }, { status: 404 });
+  }
+
   const data: Prisma.ProductUpdateInput = {};
 
   if (body.name != null) data.name = String(body.name).trim();
@@ -28,13 +37,22 @@ export async function PATCH(req: Request, { params }: Params) {
   if (body.fabric !== undefined) data.fabric = body.fabric || null;
   if (body.color !== undefined) data.color = body.color || null;
   if (body.badge !== undefined) data.badge = body.badge || null;
-  if (body.priceInPaise != null) data.priceInPaise = Math.round(Number(body.priceInPaise));
+  if (body.priceInPaise != null) {
+    const price = Math.round(Number(body.priceInPaise));
+    if (price <= 0) {
+      return NextResponse.json({ error: "Price must be greater than 0" }, { status: 400 });
+    }
+    data.priceInPaise = price;
+  }
   if (body.compareAtPaise !== undefined) {
     const compare = body.compareAtPaise === "" || body.compareAtPaise == null
       ? null
       : Math.round(Number(body.compareAtPaise));
-    const price = body.priceInPaise != null ? Math.round(Number(body.priceInPaise)) : undefined;
-    data.compareAtPaise = compare && (!price || compare > price) ? compare : null;
+    const price =
+      data.priceInPaise != null
+        ? (data.priceInPaise as number)
+        : existing.priceInPaise;
+    data.compareAtPaise = compare && compare > price ? compare : null;
   }
   if (body.isNewArrival != null) data.isNewArrival = Boolean(body.isNewArrival);
   if (body.inStock != null) data.inStock = Boolean(body.inStock);
@@ -46,30 +64,32 @@ export async function PATCH(req: Request, { params }: Params) {
     }
   }
 
-  const product = await prisma.product.update({
+  let updated = await prisma.product.update({
     where: { id },
     data,
     include: { images: true },
   });
 
-  if (body.imageUrl) {
+  if (body.imageUrl !== undefined) {
     const url = String(body.imageUrl).trim();
-    const primary = product.images.find((i) => i.isPrimary) ?? product.images[0];
-    if (primary) {
-      await prisma.productImage.update({ where: { id: primary.id }, data: { url } });
-    } else {
-      await prisma.productImage.create({
-        data: { productId: id, url, isPrimary: true, sortOrder: 0 },
-      });
+    if (url) {
+      const primary = updated.images.find((i) => i.isPrimary) ?? updated.images[0];
+      if (primary) {
+        await prisma.productImage.update({ where: { id: primary.id }, data: { url } });
+      } else {
+        await prisma.productImage.create({
+          data: { productId: id, url, isPrimary: true, sortOrder: 0 },
+        });
+      }
     }
+    const refreshed = await prisma.product.findUnique({
+      where: { id },
+      include: { images: true },
+    });
+    if (refreshed) updated = refreshed;
   }
 
-  const updated = await prisma.product.findUnique({
-    where: { id },
-    include: { images: true },
-  });
-
-  revalidateShop();
+  revalidateShop(updated.slug);
   return NextResponse.json({ product: updated });
 }
 

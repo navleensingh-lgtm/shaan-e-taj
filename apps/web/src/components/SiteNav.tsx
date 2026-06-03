@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CartLink } from "./CartLink";
+import { NavAuth } from "./NavAuth";
 
 const primaryLinks = [
   { href: "/new-arrivals", label: "New Arrivals" },
@@ -32,7 +33,8 @@ export function SiteNav() {
           ))}
         </ul>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <NavAuth />
           <CartLink />
           <Link
             href="/catalog"

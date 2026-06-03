@@ -65,11 +65,6 @@ export async function SiteFooter() {
                 </Link>
               </li>
             ))}
-            <li>
-              <Link href="/admin" className="hover:text-gold">
-                Admin
-              </Link>
-            </li>
           </ul>
           <p className="mt-6 text-[10px] uppercase tracking-[0.25em] text-gold">Info</p>
           <ul className="mt-3 space-y-2 text-sm text-brand-subtle">

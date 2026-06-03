@@ -1,17 +1,28 @@
 "use client";
 
 import { Suspense } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { UserRole } from "@shaan-e-taj/database";
+import { postLoginPath } from "@/lib/post-login";
 
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
+  const { data: session, status } = useSession();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const callbackUrl = params.get("callbackUrl");
+
+  useEffect(() => {
+    if (status !== "authenticated" || !session?.user) return;
+    if (session.user.role === UserRole.ADMIN) return;
+    router.replace(postLoginPath(session.user.role, callbackUrl, "customer"));
+  }, [status, session, router, callbackUrl]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -45,16 +56,27 @@ function LoginForm() {
         email: email || undefined,
         phone: phone || undefined,
         password,
-        callbackUrl: params.get("callbackUrl") ?? "/",
       });
+
       if (result?.error) {
-        const hint =
+        throw new Error(
           result.error === "CredentialsSignin"
-            ? "Wrong email or password. Use navleensingh05@gmail.com (all lowercase) and your account password."
-            : `Sign-in error (${result.error}). If the site was just updated, wait 2 minutes and try again.`;
-        throw new Error(hint);
+            ? "Wrong email/phone or password. New customer? Register below."
+            : `Sign-in failed (${result.error})`
+        );
       }
-      router.push(params.get("callbackUrl") ?? "/admin");
+
+      const meRes = await fetch("/api/auth/session");
+      const me = await meRes.json();
+      const role = me?.user?.role as UserRole | undefined;
+
+      if (role === UserRole.ADMIN) {
+        setError("This is a staff account. Sign in at /admin/login instead.");
+        await signOut({ redirect: false });
+        return;
+      }
+
+      router.push(postLoginPath(role, callbackUrl, "customer"));
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -65,13 +87,18 @@ function LoginForm() {
 
   return (
     <section className="mx-auto max-w-md px-5 py-20">
-      <h1 className="serif text-center text-4xl">
-        {mode === "login" ? "Welcome Back" : "Create Account"}
+      <p className="text-center text-[10px] uppercase tracking-[0.25em] text-rose">Customer</p>
+      <h1 className="serif mt-2 text-center text-4xl">
+        {mode === "login" ? "Sign In" : "Create Account"}
       </h1>
+      <p className="mt-3 text-center text-sm text-brand-muted">
+        Track orders, saved addresses & wishlist.
+      </p>
       <form onSubmit={onSubmit} className="mt-10 space-y-4">
         {mode === "register" && (
           <input
             name="name"
+            required
             placeholder="Full name"
             className="w-full border border-brand-border bg-white px-4 py-3 text-sm"
           />
@@ -91,6 +118,7 @@ function LoginForm() {
           name="password"
           type="password"
           required
+          minLength={6}
           placeholder="Password"
           className="w-full border border-brand-border bg-white px-4 py-3 text-sm"
         />

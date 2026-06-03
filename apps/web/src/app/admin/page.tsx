@@ -45,8 +45,8 @@ export default function AdminPage() {
       <section className="mx-auto max-w-md px-5 py-20 text-center">
         <h1 className="serif text-3xl">Admin</h1>
         <p className="mt-4 text-brand-muted">Admin access only.</p>
-        <Link href="/login" className="mt-4 inline-block text-rose underline">
-          Sign in
+        <Link href="/admin/login" className="mt-4 inline-block text-rose underline">
+          Admin sign in
         </Link>
       </section>
     );

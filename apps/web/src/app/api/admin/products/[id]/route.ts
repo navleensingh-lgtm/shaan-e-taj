@@ -1,0 +1,159 @@
+import { NextResponse } from "next/server";
+import {
+  prisma,
+  ProductStatus,
+  type Prisma,
+} from "@shaan-e-taj/database";
+import { requireAdminSession } from "@/lib/admin-auth";
+import { revalidateShop } from "@/lib/revalidate-shop";
+import { normalizeProductImages, normalizeProductMedia } from "@/lib/product-media";
+
+type Params = { params: Promise<{ id: string }> };
+
+export async function PATCH(req: Request, { params }: Params) {
+  if (!(await requireAdminSession())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const body = await req.json();
+
+  const existing = await prisma.product.findUnique({
+    where: { id },
+    include: { images: true },
+  });
+  if (!existing) {
+    return NextResponse.json({ error: "Product not found" }, { status: 404 });
+  }
+
+  const data: Prisma.ProductUpdateInput = {};
+
+  if (body.name != null) data.name = String(body.name).trim();
+  if (body.slug != null) data.slug = String(body.slug).trim();
+  if (body.description != null) data.description = String(body.description);
+  if (body.mainCategory != null) data.mainCategory = String(body.mainCategory).trim() || existing.mainCategory;
+  if (body.subCategory != null) data.subCategory = String(body.subCategory).trim() || existing.subCategory;
+  if (body.fabric !== undefined) data.fabric = body.fabric || null;
+  if (body.color !== undefined) data.color = body.color || null;
+  if (body.badge !== undefined) data.badge = body.badge || null;
+  if (body.priceInPaise != null) {
+    const price = Math.round(Number(body.priceInPaise));
+    if (price <= 0) {
+      return NextResponse.json({ error: "Price must be greater than 0" }, { status: 400 });
+    }
+    data.priceInPaise = price;
+  }
+  if (body.compareAtPaise !== undefined) {
+    const compare = body.compareAtPaise === "" || body.compareAtPaise == null
+      ? null
+      : Math.round(Number(body.compareAtPaise));
+    const price =
+      data.priceInPaise != null
+        ? (data.priceInPaise as number)
+        : existing.priceInPaise;
+    data.compareAtPaise = compare && compare > price ? compare : null;
+  }
+  if (body.isNewArrival != null) data.isNewArrival = Boolean(body.isNewArrival);
+  if (body.inStock != null) data.inStock = Boolean(body.inStock);
+  if (body.stitchingAvailable != null) data.stitchingAvailable = Boolean(body.stitchingAvailable);
+  if (body.status != null) {
+    data.status = body.status as ProductStatus;
+    if (body.status === ProductStatus.PUBLISHED) {
+      data.publishedAt = existing.publishedAt ?? new Date();
+      if (body.isNewArrival == null && !existing.isNewArrival) {
+        data.isNewArrival = true;
+      }
+    }
+  }
+
+  let updated = await prisma.product.update({
+    where: { id },
+    data,
+    include: { images: true, media: { orderBy: { sortOrder: "asc" } } },
+  });
+
+  if (body.images !== undefined) {
+    const images = normalizeProductImages(body.images);
+    await prisma.productImage.deleteMany({ where: { productId: id } });
+    if (images.length) {
+      await prisma.productImage.createMany({
+        data: images.map((img, index) => ({
+          productId: id,
+          url: img.url,
+          isPrimary: img.isPrimary ?? index === 0,
+          sortOrder: img.sortOrder ?? index,
+          alt: img.alt ?? null,
+        })),
+      });
+    }
+    const refreshed = await prisma.product.findUnique({
+      where: { id },
+      include: { images: { orderBy: { sortOrder: "asc" } }, media: { orderBy: { sortOrder: "asc" } } },
+    });
+    if (refreshed) updated = refreshed;
+  } else if (body.imageUrl !== undefined) {
+    const url = String(body.imageUrl).trim();
+    if (url) {
+      const primary = updated.images.find((i) => i.isPrimary) ?? updated.images[0];
+      if (primary) {
+        await prisma.productImage.update({ where: { id: primary.id }, data: { url } });
+      } else {
+        await prisma.productImage.create({
+          data: { productId: id, url, isPrimary: true, sortOrder: 0 },
+        });
+      }
+    }
+    const refreshed = await prisma.product.findUnique({
+      where: { id },
+      include: { images: { orderBy: { sortOrder: "asc" } }, media: { orderBy: { sortOrder: "asc" } } },
+    });
+    if (refreshed) updated = refreshed;
+  }
+
+  if (body.media !== undefined) {
+    const media = normalizeProductMedia(body.media);
+    if (Array.isArray(body.media) && body.media.length > 0 && media.length === 0) {
+      return NextResponse.json(
+        { error: "One or more video URLs are invalid. Check YouTube, Shorts, or Instagram Reel links." },
+        { status: 400 }
+      );
+    }
+    await prisma.productMedia.deleteMany({ where: { productId: id } });
+    if (media.length) {
+      await prisma.productMedia.createMany({
+        data: media.map((item, index) => ({ productId: id, ...item, sortOrder: index })),
+      });
+    }
+    const refreshed = await prisma.product.findUnique({
+      where: { id },
+      include: { images: true, media: { orderBy: { sortOrder: "asc" } } },
+    });
+    if (refreshed) updated = refreshed;
+  }
+
+  revalidateShop(updated.slug);
+  return NextResponse.json({ product: updated });
+}
+
+export async function DELETE(_req: Request, { params }: Params) {
+  if (!(await requireAdminSession())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const { id } = await params;
+  const existing = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
+  if (!existing) {
+    return NextResponse.json({ error: "Product not found" }, { status: 404 });
+  }
+
+  await prisma.product.update({
+    where: { id },
+    data: {
+      status: ProductStatus.ARCHIVED,
+      inStock: false,
+      isNewArrival: false,
+    },
+  });
+
+  revalidateShop(existing.slug);
+  return NextResponse.json({ ok: true });
+}

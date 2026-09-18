@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+:root {
+  --ivory: #faf7f2;
+  --ivory-2: #f2ece3;
+  --rose: #c9967a;
+  --rose-light: #e8c5b0;
+  --rose-dark: #a0705a;
+  --gold: #c8a96e;
+  --gold-dark: #9a7a3e;
+  --text: #2c1f14;
+  --text-2: #6b5040;
+  --text-3: #9a8070;
+  --border: #e8ddd0;
+}
+
+@theme inline {
+  --color-ivory: var(--ivory);
+  --color-ivory-2: var(--ivory-2);
+  --color-rose: var(--rose);
+  --color-rose-light: var(--rose-light);
+  --color-rose-dark: var(--rose-dark);
+  --color-gold: var(--gold);
+  --color-gold-dark: var(--gold-dark);
+  --color-brand-text: var(--text);
+  --color-brand-muted: var(--text-2);
+  --color-brand-subtle: var(--text-3);
+  --color-brand-border: var(--border);
+  --font-serif: var(--font-cormorant);
+  --font-sans: var(--font-jost);
+}
+
+body {
+  background: var(--ivory);
+  color: var(--text);
+  font-family: var(--font-jost), system-ui, sans-serif;
+}
+
+.serif {
+  font-family: var(--font-cormorant), Georgia, serif;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee 38s linear infinite;
+}
+
+.marquee-wrap:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-12px) scale(1.02);
+  }
+}
+
+@keyframes hero-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.hero-orb {
+  animation: hero-float 9s ease-in-out infinite;
+}
+
+.hero-orb-2 {
+  animation-delay: -3s;
+  animation-duration: 11s;
+}
+
+.hero-orb-3 {
+  animation-delay: -5s;
+  animation-duration: 13s;
+}
+
+.hero-shimmer {
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(200, 169, 110, 0.08) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  animation: hero-shimmer 12s ease-in-out infinite;
+}

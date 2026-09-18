@@ -1,0 +1,28 @@
+{
+  "name": "shaan-e-taj",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "dotenv -e .env -- npm run dev -w @shaan-e-taj/web",
+    "dev:api": "dotenv -e .env -- npm run dev -w @shaan-e-taj/api",
+    "dev:bot": "dotenv -e .env -- npm run dev -w @shaan-e-taj/telegram-bot",
+    "build": "npm run build -w @shaan-e-taj/database && npm run build -ws --if-present",
+    "db:generate": "npm run generate -w @shaan-e-taj/database",
+    "db:migrate": "npm run migrate -w @shaan-e-taj/database",
+    "db:studio": "npm run studio -w @shaan-e-taj/database",
+    "db:seed": "npm run seed -w @shaan-e-taj/database",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "db:setup": "node scripts/setup-database.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^8.0.0",
+    "pg": "^8.21.0"
+  }
+}

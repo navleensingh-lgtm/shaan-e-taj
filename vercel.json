@@ -1,5 +1,5 @@
 {
   "installCommand": "npm install --include=optional",
-  "buildCommand": "npm run build -w @shaan-e-taj/database && npm run build -w @shaan-e-taj/web",
+  "buildCommand": "npx prisma db push --schema packages/database/prisma/schema.prisma --skip-generate && npm run build -w @shaan-e-taj/database && npm run build -w @shaan-e-taj/web",
   "framework": "nextjs"
 }

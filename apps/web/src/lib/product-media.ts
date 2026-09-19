@@ -34,21 +34,13 @@ export function videoEmbed(
   try {
     const parsed = new URL(url);
     const host = parsed.hostname.replace(/^www\./, "");
-    if (host === "youtu.be") {
-      const id = parsed.pathname.split("/").filter(Boolean)[0];
-      if (id) {
-        return {
-          type: "youtube",
-          src: `https://www.youtube.com/embed/${id}?rel=0`,
-          canonicalUrl: url,
-        };
-      }
-    }
-    if (host === "youtube.com" || host.endsWith(".youtube.com")) {
-      const id =
-        parsed.searchParams.get("v") ||
-        parsed.pathname.match(/^\/(?:shorts|embed|live)\/([^/?#]+)/)?.[1];
-      if (id) {
+    if (host === "youtu.be" || host === "youtube.com" || host.endsWith(".youtube.com")) {
+      // Extract ID from various YouTube URL formats
+      const ytIdMatch = parsed.hostname === "youtu.be"
+        ? parsed.pathname.split("/").filter(Boolean)[0]
+        : parsed.searchParams.get("v") || parsed.pathname.match(/^\/(?:shorts|embed|live)\/([^/?#]+)/)?.[1];
+      if (ytIdMatch) {
+        const id = ytIdMatch;
         return {
           type: "youtube",
           src: `https://www.youtube.com/embed/${id}?rel=0`,
@@ -75,6 +67,46 @@ export function videoEmbed(
   return { type: "video", src: url, canonicalUrl: url };
 }
 
+export type YouTubeParse = {
+  videoId: string | null;
+  isShort: boolean;
+  embedUrl?: string;
+  thumbnailUrl?: string;
+};
+
+export function parseYouTube(input: string): YouTubeParse {
+  try {
+    const url = new URL(input);
+    const host = url.hostname.replace(/^www\./, "");
+    if (host === "youtu.be") {
+      const id = url.pathname.split("/").filter(Boolean)[0] || null;
+      if (id) {
+        return {
+          videoId: id,
+          isShort: false,
+          embedUrl: `https://www.youtube.com/embed/${id}?rel=0`,
+          thumbnailUrl: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+        };
+      }
+    }
+    if (host === "youtube.com" || host.endsWith(".youtube.com")) {
+      const id = url.searchParams.get("v") || url.pathname.match(/^\/(?:shorts|embed|live)\/([^/?#]+)/)?.[1] || null;
+      if (id) {
+        const isShort = /\/shorts\//.test(url.pathname);
+        return {
+          videoId: id,
+          isShort,
+          embedUrl: `https://www.youtube.com/embed/${id}?rel=0`,
+          thumbnailUrl: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+        };
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return { videoId: null, isShort: false };
+}
+
 export function inferMediaKind(url: string): string {
   const embed = videoEmbed(url);
   if (embed.type === "youtube") return "YOUTUBE";
@@ -83,8 +115,8 @@ export function inferMediaKind(url: string): string {
 }
 
 export function validateYouTubeUrl(url: string): string | null {
-  const embed = videoEmbed(url);
-  if (embed.type !== "youtube") return "Enter a valid YouTube or YouTube Shorts link";
+  const parsed = parseYouTube(url);
+  if (!parsed.videoId) return "Enter a valid YouTube or YouTube Shorts link";
   return null;
 }
 

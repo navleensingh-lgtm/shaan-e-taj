@@ -6,7 +6,7 @@ import {
 } from "@shaan-e-taj/database";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { revalidateShop } from "@/lib/revalidate-shop";
-import { normalizeProductImages, normalizeProductMedia } from "@/lib/product-media";
+import { normalizeProductImages } from "@/lib/product-media";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -69,7 +69,7 @@ export async function PATCH(req: Request, { params }: Params) {
   let updated = await prisma.product.update({
     where: { id },
     data,
-    include: { images: true, media: { orderBy: { sortOrder: "asc" } } },
+    include: { images: true },
   });
 
   if (body.images !== undefined) {
@@ -88,7 +88,7 @@ export async function PATCH(req: Request, { params }: Params) {
     }
     const refreshed = await prisma.product.findUnique({
       where: { id },
-      include: { images: { orderBy: { sortOrder: "asc" } }, media: { orderBy: { sortOrder: "asc" } } },
+      include: { images: { orderBy: { sortOrder: "asc" } } },
     });
     if (refreshed) updated = refreshed;
   } else if (body.imageUrl !== undefined) {
@@ -105,28 +105,7 @@ export async function PATCH(req: Request, { params }: Params) {
     }
     const refreshed = await prisma.product.findUnique({
       where: { id },
-      include: { images: { orderBy: { sortOrder: "asc" } }, media: { orderBy: { sortOrder: "asc" } } },
-    });
-    if (refreshed) updated = refreshed;
-  }
-
-  if (body.media !== undefined) {
-    const media = normalizeProductMedia(body.media);
-    if (Array.isArray(body.media) && body.media.length > 0 && media.length === 0) {
-      return NextResponse.json(
-        { error: "One or more video URLs are invalid. Check YouTube, Shorts, or Instagram Reel links." },
-        { status: 400 }
-      );
-    }
-    await prisma.productMedia.deleteMany({ where: { productId: id } });
-    if (media.length) {
-      await prisma.productMedia.createMany({
-        data: media.map((item, index) => ({ productId: id, ...item, sortOrder: index })),
-      });
-    }
-    const refreshed = await prisma.product.findUnique({
-      where: { id },
-      include: { images: true, media: { orderBy: { sortOrder: "asc" } } },
+      include: { images: { orderBy: { sortOrder: "asc" } } },
     });
     if (refreshed) updated = refreshed;
   }

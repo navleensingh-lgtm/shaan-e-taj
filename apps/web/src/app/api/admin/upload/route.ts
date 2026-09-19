@@ -3,7 +3,6 @@ import { requireAdminSession } from "@/lib/admin-auth";
 import {
   uploadProductFile,
   getDirectUploadInstructions,
-  isCloudStorageConfigured,
 } from "@/lib/r2-upload";
 import { revalidateShop } from "@/lib/revalidate-shop";
 import {
@@ -21,7 +20,7 @@ const ALLOWED_VIDEOS = new Set<string>(ALLOWED_PRODUCT_VIDEO_TYPES);
 
 /**
  * GET /api/admin/upload?filename=...&contentType=...&size=...
- * If R2 or Supabase is configured, returns direct upload instructions (e.g. presigned S3 PUT URL)
+ * Returns R2 direct upload instructions (presigned S3 PUT URL)
  * so the client can upload large files (up to 500 MB images / 1 GB videos) directly without hitting
  * serverless body size limits (e.g. 4.5 MB on Vercel, reverse proxy limits, etc.).
  */
@@ -53,30 +52,17 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Image must be 500 MB or smaller." }, { status: 400 });
   }
 
-  // If running in production, require cloud storage to be configured.
-  if (process.env.NODE_ENV === "production" && !isCloudStorageConfigured()) {
-    return NextResponse.json(
-      { error: "Server misconfiguration: cloud storage not configured for production." },
-      { status: 500 }
-    );
+  try {
+    const instructions = await getDirectUploadInstructions(filename, contentType);
+    return NextResponse.json({
+      direct: true,
+      ...instructions,
+      kind: isVideo ? "VIDEO" : "IMAGE",
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "R2 upload configuration failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  if (isCloudStorageConfigured()) {
-    try {
-      const instructions = await getDirectUploadInstructions(filename, contentType);
-      if (instructions) {
-        return NextResponse.json({
-          direct: true,
-          ...instructions,
-          kind: isVideo ? "VIDEO" : "IMAGE",
-        });
-      }
-    } catch (err) {
-      console.warn("[admin/upload direct-instructions fallback]", err);
-    }
-  }
-
-  return NextResponse.json({ direct: false, kind: isVideo ? "VIDEO" : "IMAGE" });
 }
 
 export async function POST(req: Request) {
@@ -121,4 +107,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

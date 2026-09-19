@@ -7,7 +7,7 @@ import {
 import { requireAdminSession } from "@/lib/admin-auth";
 import { slugify } from "@/lib/slug";
 import { revalidateShop } from "@/lib/revalidate-shop";
-import { normalizeProductImages, normalizeProductMedia } from "@/lib/product-media";
+import { normalizeProductImages } from "@/lib/product-media";
 
 export async function GET() {
   if (!(await requireAdminSession())) {
@@ -15,7 +15,7 @@ export async function GET() {
   }
   const products = await prisma.product.findMany({
     orderBy: { updatedAt: "desc" },
-    include: { images: { orderBy: { sortOrder: "asc" } }, media: { orderBy: { sortOrder: "asc" } } },
+    include: { images: { orderBy: { sortOrder: "asc" } } },
   });
   return NextResponse.json({ products });
 }
@@ -50,13 +50,6 @@ export async function POST(req: Request) {
       : imageUrl
         ? [{ url: imageUrl, isPrimary: true, sortOrder: 0 }]
         : [];
-  const media = normalizeProductMedia(body.media);
-  if (Array.isArray(body.media) && body.media.length > 0 && media.length === 0) {
-    return NextResponse.json(
-      { error: "One or more video URLs are invalid. Check YouTube, Shorts, or Instagram Reel links." },
-      { status: 400 }
-    );
-  }
 
   const product = await prisma.product.create({
     data: {
@@ -87,11 +80,8 @@ export async function POST(req: Request) {
             })),
           }
         : undefined,
-      media: media.length
-        ? { create: media.map((item, index) => ({ ...item, sortOrder: index })) }
-        : undefined,
     },
-    include: { images: true, media: { orderBy: { sortOrder: "asc" } } },
+    include: { images: true },
   });
 
   revalidateShop(product.slug);

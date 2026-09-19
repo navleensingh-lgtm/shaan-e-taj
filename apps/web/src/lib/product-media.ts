@@ -1,5 +1,23 @@
-export const MAX_PRODUCT_VIDEO_MB = 200;
+export const MAX_PRODUCT_IMAGE_MB = 500;
+export const MAX_PRODUCT_IMAGE_SIZE = MAX_PRODUCT_IMAGE_MB * 1024 * 1024;
+
+export const MAX_PRODUCT_VIDEO_MB = 1000;
 export const MAX_PRODUCT_VIDEO_SIZE = MAX_PRODUCT_VIDEO_MB * 1024 * 1024;
+
+export const ALLOWED_PRODUCT_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+] as const;
+
+export const ALLOWED_PRODUCT_VIDEO_TYPES = [
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+] as const;
 
 export type ProductMediaInput = { url: string; kind: string };
 

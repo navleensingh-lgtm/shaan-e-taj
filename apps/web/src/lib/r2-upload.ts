@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const supabaseUrl = process.env.SUPABASE_URL?.trim();
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY?.trim();
@@ -13,6 +14,14 @@ const r2Bucket = process.env.R2_BUCKET_NAME ?? "shaanetaj-products";
 const r2PublicUrl = process.env.R2_PUBLIC_URL?.trim();
 
 export type UploadStorage = "r2" | "supabase" | "local";
+
+export type DirectUploadInstructions = {
+  storage: "r2" | "supabase";
+  uploadUrl: string;
+  publicUrl: string;
+  method: "PUT" | "POST";
+  headers: Record<string, string>;
+};
 
 let r2Client: S3Client | null = null;
 
@@ -148,6 +157,57 @@ export async function uploadProductFile(
 /** Backwards-compatible name for image-only callers. */
 export const uploadProductImage = uploadProductFile;
 
+export async function getDirectUploadInstructions(
+  filename: string,
+  contentType: string
+): Promise<DirectUploadInstructions | null> {
+  if (isR2Configured()) {
+    const client = getR2Client();
+    if (!client) return null;
+    const key = objectKey(filename, contentType);
+    const command = new PutObjectCommand({
+      Bucket: r2Bucket,
+      Key: key,
+      ContentType: contentType,
+    });
+    // Presigned URL valid for 30 minutes to accommodate large 1 GB uploads
+    const uploadUrl = await getSignedUrl(client, command, { expiresIn: 1800 });
+    const publicUrl = r2PublicUrl
+      ? `${r2PublicUrl.replace(/\/$/, "")}/${key}`
+      : `https://${r2Bucket}.${r2AccountId}.r2.dev/${key}`;
+
+    return {
+      storage: "r2",
+      uploadUrl,
+      publicUrl,
+      method: "PUT",
+      headers: {
+        "Content-Type": contentType,
+      },
+    };
+  }
+
+  if (isSupabaseConfigured() && supabaseUrl && supabaseServiceKey) {
+    const key = objectKey(filename, contentType);
+    const uploadUrl = `${supabaseUrl}/storage/v1/object/${supabaseBucket}/${key}`;
+    const publicUrl = `${supabaseUrl}/storage/v1/object/public/${supabaseBucket}/${key}`;
+
+    return {
+      storage: "supabase",
+      uploadUrl,
+      publicUrl,
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${supabaseServiceKey}`,
+        "Content-Type": contentType,
+        "x-upsert": "true",
+      },
+    };
+  }
+
+  return null;
+}
+
 export function isCloudStorageConfigured(): boolean {
   return isR2Configured() || isSupabaseConfigured();
 }
@@ -156,3 +216,4 @@ export function isCloudStorageConfigured(): boolean {
 export function isR2ConfiguredLegacy(): boolean {
   return isR2Configured();
 }
+

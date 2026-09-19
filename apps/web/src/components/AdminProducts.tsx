@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { apiFetch, uploadAdminImage } from "@/lib/api-client";
 import {
   inferMediaKind,
+  MAX_PRODUCT_IMAGE_MB,
+  MAX_PRODUCT_IMAGE_SIZE,
   MAX_PRODUCT_VIDEO_MB,
   MAX_PRODUCT_VIDEO_SIZE,
   validateInstagramReelUrl,
@@ -116,8 +118,8 @@ export function AdminProducts() {
   async function onImageFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 8 * 1024 * 1024) {
-      setUploadError("Images must be 8 MB or smaller (JPG, PNG, WebP, HEIC).");
+    if (file.size > MAX_PRODUCT_IMAGE_SIZE) {
+      setUploadError("Image must be 500 MB or smaller.");
       e.target.value = "";
       return;
     }
@@ -134,7 +136,7 @@ export function AdminProducts() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > MAX_PRODUCT_VIDEO_SIZE) {
-      setUploadError("Video must be 200 MB or smaller.");
+      setUploadError("Video must be 1 GB or smaller.");
       e.target.value = "";
       return;
     }
@@ -489,7 +491,7 @@ export function AdminProducts() {
             <div className="md:col-span-2 rounded-sm border border-brand-border bg-white p-4">
               <p className="text-sm font-medium text-brand-text">Product images *</p>
               <p className="mt-1 text-xs text-brand-muted">
-                JPG, PNG, WebP, HEIC — max 8 MB each. Set one as primary (catalog thumbnail).
+                JPG, PNG, WebP, HEIC — max 500 MB each. Set one as primary (catalog thumbnail).
               </p>
               <input
                 type="file"
@@ -546,7 +548,7 @@ export function AdminProducts() {
             <div className="md:col-span-2 rounded-sm border border-brand-border bg-white p-4">
               <p className="text-sm font-medium text-brand-text">Videos & social media</p>
               <p className="mt-1 text-xs text-brand-muted">
-                Upload MP4/WebM/MOV (200 MB max), or add YouTube / Shorts / Instagram Reel links.
+                Upload MP4/WebM/MOV (1000 MB max), or add YouTube / Shorts / Instagram Reel links.
               </p>
               <input
                 type="file"

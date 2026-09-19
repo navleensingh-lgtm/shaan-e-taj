@@ -18,12 +18,12 @@
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
     "@prisma/adapter-neon": "^6.9.0",
-    "@prisma/client": "^6.9.0",
+    "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.2"
   },
   "devDependencies": {
     "dotenv-cli": "^8.0.0",
-    "prisma": "^6.9.0",
+    "prisma": "^6.19.3",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }

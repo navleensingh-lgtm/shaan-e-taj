@@ -1,16 +1,75 @@
 import { NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/admin-auth";
-import { uploadProductFile } from "@/lib/r2-upload";
+import {
+  uploadProductFile,
+  getDirectUploadInstructions,
+  isCloudStorageConfigured,
+} from "@/lib/r2-upload";
 import { revalidateShop } from "@/lib/revalidate-shop";
-import { MAX_PRODUCT_VIDEO_SIZE } from "@/lib/product-media";
+import {
+  ALLOWED_PRODUCT_IMAGE_TYPES,
+  ALLOWED_PRODUCT_VIDEO_TYPES,
+  MAX_PRODUCT_IMAGE_SIZE,
+  MAX_PRODUCT_VIDEO_SIZE,
+} from "@/lib/product-media";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const MAX_VIDEO_BYTES = MAX_PRODUCT_VIDEO_SIZE;
-const ALLOWED_IMAGES = new Set(["image/jpeg", "image/png", "image/webp", "image/jpg", "image/heic", "image/heif"]);
-const ALLOWED_VIDEOS = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+const ALLOWED_IMAGES = new Set<string>(ALLOWED_PRODUCT_IMAGE_TYPES);
+const ALLOWED_VIDEOS = new Set<string>(ALLOWED_PRODUCT_VIDEO_TYPES);
+
+/**
+ * GET /api/admin/upload?filename=...&contentType=...&size=...
+ * If R2 or Supabase is configured, returns direct upload instructions (e.g. presigned S3 PUT URL)
+ * so the client can upload large files (up to 500 MB images / 1 GB videos) directly without hitting
+ * serverless body size limits (e.g. 4.5 MB on Vercel, reverse proxy limits, etc.).
+ */
+export async function GET(req: Request) {
+  if (!(await requireAdminSession())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const filename = searchParams.get("filename") ?? "file";
+  const contentType = searchParams.get("contentType") ?? "";
+  const size = Number(searchParams.get("size") || 0);
+
+  const isImage = ALLOWED_IMAGES.has(contentType);
+  const isVideo = ALLOWED_VIDEOS.has(contentType);
+
+  if (!isImage && !isVideo) {
+    return NextResponse.json(
+      { error: "Use JPG, PNG, WebP, HEIC, MP4, WebM, or MOV files" },
+      { status: 400 }
+    );
+  }
+
+  if (isVideo && size > MAX_PRODUCT_VIDEO_SIZE) {
+    return NextResponse.json({ error: "Video must be 1 GB or smaller." }, { status: 400 });
+  }
+
+  if (isImage && size > MAX_PRODUCT_IMAGE_SIZE) {
+    return NextResponse.json({ error: "Image must be 500 MB or smaller." }, { status: 400 });
+  }
+
+  if (isCloudStorageConfigured()) {
+    try {
+      const instructions = await getDirectUploadInstructions(filename, contentType);
+      if (instructions) {
+        return NextResponse.json({
+          direct: true,
+          ...instructions,
+          kind: isVideo ? "VIDEO" : "IMAGE",
+        });
+      }
+    } catch (err) {
+      console.warn("[admin/upload direct-instructions fallback]", err);
+    }
+  }
+
+  return NextResponse.json({ direct: false, kind: isVideo ? "VIDEO" : "IMAGE" });
+}
 
 export async function POST(req: Request) {
   if (!(await requireAdminSession())) {
@@ -32,11 +91,12 @@ export async function POST(req: Request) {
     );
   }
 
-  if (file.size > (isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES)) {
-    return NextResponse.json(
-      { error: isVideo ? "Video must be 200 MB or smaller." : "Max image size is 8 MB" },
-      { status: 400 }
-    );
+  if (isVideo && file.size > MAX_PRODUCT_VIDEO_SIZE) {
+    return NextResponse.json({ error: "Video must be 1 GB or smaller." }, { status: 400 });
+  }
+
+  if (isImage && file.size > MAX_PRODUCT_IMAGE_SIZE) {
+    return NextResponse.json({ error: "Image must be 500 MB or smaller." }, { status: 400 });
   }
 
   try {
@@ -52,3 +112,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+

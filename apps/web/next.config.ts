@@ -14,9 +14,6 @@ const sbHost = supabaseHostname();
 
 const nextConfig: NextConfig = {
   ...(process.env.VERCEL ? {} : { output: "standalone" as const }),
-  turbopack: {
-    root: "../..",
-  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },

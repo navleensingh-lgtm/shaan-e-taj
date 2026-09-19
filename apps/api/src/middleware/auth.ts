@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { prisma, UserRole, type User } from "@shaan-e-taj/database";
 
-export type AuthedRequest = Request & { user: User };
+export type AuthedRequest<P = any, ResBody = any, ReqBody = any, ReqQuery = any> = Request<P, ResBody, ReqBody, ReqQuery> & { user: User };
 
 export function requireInternalSecret(
   req: Request,

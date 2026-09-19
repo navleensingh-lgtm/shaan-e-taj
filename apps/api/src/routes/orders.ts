@@ -184,9 +184,10 @@ const CANCELLABLE: OrderStatus[] = [
 ];
 
 orderRoutes.post("/:id/cancel", requireUser, async (req, res) => {
-  const { user } = req as AuthedRequest;
+  const { user } = req as unknown as AuthedRequest;
+  const orderId = String(req.params.id);
   const order = await prisma.order.findFirst({
-    where: { id: req.params.id, userId: user.id },
+    where: { id: orderId, userId: user.id },
   });
 
   if (!order) {

@@ -1,4 +1,4 @@
 {
   "installCommand": "npm install --include=optional",
-  "buildCommand": "npx prisma migrate deploy --schema ../../packages/database/prisma/schema.prisma && npm run build -w @shaan-e-taj/database && npm run build -w @shaan-e-taj/web"
+  "buildCommand": "(npx prisma migrate resolve --applied 20260919000000_baseline_existing_schema --schema ../../packages/database/prisma/schema.prisma || true) && npx prisma migrate deploy --schema ../../packages/database/prisma/schema.prisma && npm run build -w @shaan-e-taj/database && npm run build -w @shaan-e-taj/web"
 }

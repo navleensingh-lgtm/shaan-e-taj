@@ -1,0 +1,2 @@
+-- Baseline only. The production database predates Prisma migration tracking;
+-- its existing tables are intentionally left untouched.

@@ -5,6 +5,7 @@ import { SocialLinksFooter } from "@/components/SocialLinks";
 
 const shopLinks = [
   { href: "/new-arrivals", label: "New Arrivals" },
+  { href: "/collections", label: "Collections" },
   { href: "/bridal", label: "Bridal" },
   { href: "/party-wear", label: "Party Wear" },
   { href: "/festive", label: "Festive" },

@@ -136,6 +136,15 @@ export async function uploadProductFile(
   contentType: string,
   filename: string
 ): Promise<{ url: string; storage: UploadStorage }> {
+  // In production we require cloud storage (prefer R2). Fail loudly if not configured.
+  if (process.env.NODE_ENV === "production") {
+    if (!isR2Configured() && !isSupabaseConfigured()) {
+      throw new Error(
+        "Production upload requires cloud storage (R2 or Supabase). Configure R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_BUCKET_NAME or SUPABASE_URL / SUPABASE_SERVICE_KEY."
+      );
+    }
+  }
+
   if (isR2Configured()) {
     const url = await uploadToR2(buffer, contentType, filename);
     return { url, storage: "r2" };
@@ -150,6 +159,7 @@ export async function uploadProductFile(
     }
   }
 
+  // Non-production: allow local disk fallback for development convenience.
   const url = await uploadToLocalDisk(buffer, contentType, filename);
   return { url, storage: "local" };
 }

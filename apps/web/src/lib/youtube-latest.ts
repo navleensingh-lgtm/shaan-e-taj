@@ -40,6 +40,36 @@ export async function getLatestYoutubeVideo(): Promise<LatestYoutubeVideo | null
   }
 }
 
+// Augmented function: attempt to also discover Shorts if the RSS feed does not contain them.
+export async function getLatestYoutubeVideoIncludingShorts(): Promise<LatestYoutubeVideo | null> {
+  // Prefer RSS feed (uploads). If absent, try channel /videos page and look for /shorts/ patterns.
+  const fromFeed = await getLatestYoutubeVideo();
+  if (fromFeed) return fromFeed;
+
+  try {
+    const channelHtml = await fetch(siteChannelPath()).then((r) => (r.ok ? r.text() : ""));
+    if (!channelHtml) return null;
+    // Look for /shorts/VIDEO_ID occurrences in the HTML
+    const m = channelHtml.match(/\/shorts\/([a-zA-Z0-9_-]{6,})/i);
+    const id = m?.[1] ?? null;
+    if (!id) return null;
+    return {
+      videoId: id,
+      title: "Latest from Taj Fashion (Short)",
+      thumbnailUrl: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+      watchUrl: `https://www.youtube.com/watch?v=${id}`,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function siteChannelPath(): string {
+  // prefer configured channel path if provided in env or known handle
+  // default to the channel handle used elsewhere in the code
+  return `https://www.youtube.com/@Tajfashionjalandhar/videos`;
+}
+
 function decodeXmlEntities(s: string): string {
   return s
     .replace(/&amp;/g, "&")

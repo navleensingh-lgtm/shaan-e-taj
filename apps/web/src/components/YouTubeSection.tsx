@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getPublicStoreSettings } from "@/lib/store-settings";
-import { getLatestYoutubeVideo } from "@/lib/youtube-latest";
+import { getLatestYoutubeVideoIncludingShorts } from "@/lib/youtube-latest";
 import { siteConfig } from "@/lib/site-config";
 import { SocialLinks } from "@/components/SocialLinks";
 
@@ -8,7 +8,7 @@ export async function YouTubeSection() {
   const store = await getPublicStoreSettings();
   const youtube = store.youtubeUrl || siteConfig.social.youtube;
   const handle = siteConfig.social.youtubeHandle;
-  const latest = await getLatestYoutubeVideo();
+  const latest = await getLatestYoutubeVideoIncludingShorts();
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8">
@@ -29,7 +29,7 @@ export async function YouTubeSection() {
           <div className="relative mt-4 aspect-video w-full overflow-hidden rounded-sm bg-brand-text shadow-soft">
             <iframe
               title={latest.title}
-              src={`https://www.youtube.com/embed/${latest.videoId}?rel=0`}
+              src={latest.watchUrl?.includes("/watch") ? `https://www.youtube.com/embed/${latest.videoId}?rel=0` : `https://www.youtube.com/embed/${latest.videoId}?rel=0`}
               className="absolute inset-0 h-full w-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen

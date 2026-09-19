@@ -53,6 +53,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Image must be 500 MB or smaller." }, { status: 400 });
   }
 
+  // If running in production, require cloud storage to be configured.
+  if (process.env.NODE_ENV === "production" && !isCloudStorageConfigured()) {
+    return NextResponse.json(
+      { error: "Server misconfiguration: cloud storage not configured for production." },
+      { status: 500 }
+    );
+  }
+
   if (isCloudStorageConfigured()) {
     try {
       const instructions = await getDirectUploadInstructions(filename, contentType);
@@ -101,6 +109,7 @@ export async function POST(req: Request) {
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
+    // In production, uploadProductFile will throw if cloud storage is missing.
     const { url, storage } = await uploadProductFile(buffer, file.type, file.name);
 
     revalidateShop();

@@ -40,6 +40,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "api.telegram.org" },
       { protocol: "https", hostname: "*.telegram.org" },
       { protocol: "https", hostname: "i.ytimg.com" },
+      // Allow common Cloudflare R2 host patterns (bucket.account.r2.dev)
+      { protocol: "https", hostname: "*.r2.dev" },
       ...(r2Host ? [{ protocol: "https" as const, hostname: r2Host }] : []),
     ],
     unoptimized: true,

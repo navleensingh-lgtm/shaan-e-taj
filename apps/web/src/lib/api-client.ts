@@ -32,63 +32,33 @@ export async function apiFetch(path: string, init?: RequestInit) {
 export async function uploadAdminImage(file: File): Promise<{ url: string; storage: string; kind?: string }> {
   const session = await getSession();
 
-  // Try direct-to-storage presigned upload first (supports files up to 500 MB / 1 GB without proxy/body size limits)
-  try {
-    const params = new URLSearchParams({
-      filename: file.name,
-      contentType: file.type,
-      size: String(file.size),
-    });
-
-    const initRes = await fetch(`/api/admin/upload?${params.toString()}`, {
-      method: "GET",
-      credentials: "same-origin",
-      headers: session?.user?.id ? { "x-user-id": session.user.id } : {},
-    });
-
-    if (initRes.ok) {
-      const initData = await initRes.json();
-      if (initData.direct && initData.uploadUrl) {
-        const uploadRes = await fetch(initData.uploadUrl, {
-          method: initData.method || "PUT",
-          headers: initData.headers || {},
-          body: file,
-        });
-
-        if (!uploadRes.ok) {
-          throw new Error(`Direct storage upload failed with status ${uploadRes.status}`);
-        }
-
-        return {
-          url: initData.publicUrl,
-          storage: initData.storage,
-          kind: initData.kind,
-        };
-      }
-    } else {
-      const errData = await initRes.json().catch(() => ({}));
-      if (errData.error) {
-        throw new Error(errData.error);
-      }
-    }
-  } catch (err) {
-    // If the error was a validation error from GET /api/admin/upload, don't attempt fallback
-    if (err instanceof Error && (err.message.includes("smaller") || err.message.includes("Use JPG"))) {
-      throw err;
-    }
-    console.warn("[uploadAdminImage] Direct upload failed, attempting multipart fallback:", err);
-  }
-
-  // Multipart fallback (local storage development / single server)
-  const form = new FormData();
-  form.append("file", file);
-  const res = await fetch("/api/admin/upload", {
-    method: "POST",
-    body: form,
+  const params = new URLSearchParams({
+    filename: file.name,
+    contentType: file.type,
+    size: String(file.size),
+  });
+  const initRes = await fetch(`/api/admin/upload?${params.toString()}`, {
+    method: "GET",
     credentials: "same-origin",
     headers: session?.user?.id ? { "x-user-id": session.user.id } : {},
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error ?? "Upload failed");
-  return data;
+  const initData = await initRes.json().catch(() => ({}));
+  if (!initRes.ok) throw new Error(initData.error ?? "R2 upload initialization failed");
+  if (!initData.direct || !initData.uploadUrl || !initData.publicUrl) {
+    throw new Error("R2 upload is not configured.");
+  }
+
+  const uploadRes = await fetch(initData.uploadUrl, {
+    method: initData.method || "PUT",
+    headers: initData.headers || {},
+    body: file,
+  });
+  if (!uploadRes.ok) {
+    throw new Error(`R2 upload failed with status ${uploadRes.status}`);
+  }
+  return {
+    url: initData.publicUrl,
+    storage: initData.storage,
+    kind: initData.kind,
+  };
 }

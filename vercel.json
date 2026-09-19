@@ -1,4 +1,6 @@
 {
   "installCommand": "npm install --include=optional",
-  "buildCommand": "npm run build -w @shaan-e-taj/database && npm run build -w @shaan-e-taj/web"
+  "buildCommand": "npm run build -w @shaan-e-taj/database && npm run build -w @shaan-e-taj/web",
+  "outputDirectory": "apps/web/.next"
 }
+

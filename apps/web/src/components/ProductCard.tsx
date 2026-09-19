@@ -71,6 +71,14 @@ export function ProductCard({ product }: Props) {
               {product.badge}
             </span>
           )}
+          {product.media && product.media.length > 0 && !outOfStock && (
+            <span className="absolute right-3 top-3 flex items-center gap-1 rounded bg-black/60 px-2 py-0.5 text-[10px] uppercase tracking-wider text-white backdrop-blur-sm">
+              <svg className="h-2.5 w-2.5 fill-current" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              Video
+            </span>
+          )}
         </div>
         <p className="mt-4 text-[10px] uppercase tracking-[0.2em] text-brand-subtle">
           {product.subCategory.replace(/_/g, " ")}

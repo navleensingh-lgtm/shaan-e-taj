@@ -68,7 +68,10 @@ export async function listProducts(query: Record<string, string | undefined>) {
 export async function getProductBySlug(slug: string) {
   return prisma.product.findFirst({
     where: { slug, status: ProductStatus.PUBLISHED },
-    include: { images: { orderBy: { sortOrder: "asc" } } },
+    include: {
+      images: { orderBy: { sortOrder: "asc" } },
+      media: { orderBy: { sortOrder: "asc" } },
+    },
   });
 }
 

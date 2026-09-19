@@ -7,7 +7,7 @@ import {
 import { requireAdminSession } from "@/lib/admin-auth";
 import { slugify } from "@/lib/slug";
 import { revalidateShop } from "@/lib/revalidate-shop";
-import { normalizeProductImages } from "@/lib/product-media";
+import { normalizeProductImages, normalizeProductMedia } from "@/lib/product-media";
 
 export async function GET() {
   if (!(await requireAdminSession())) {
@@ -15,7 +15,10 @@ export async function GET() {
   }
   const products = await prisma.product.findMany({
     orderBy: { updatedAt: "desc" },
-    include: { images: { orderBy: { sortOrder: "asc" } } },
+    include: {
+      images: { orderBy: { sortOrder: "asc" } },
+      media: { orderBy: { sortOrder: "asc" } },
+    },
   });
   return NextResponse.json({ products });
 }
@@ -44,6 +47,7 @@ export async function POST(req: Request) {
 
   const imageUrl = String(body.imageUrl ?? "").trim();
   const imagesFromBody = normalizeProductImages(body.images);
+  const mediaFromBody = normalizeProductMedia(body.media);
   const imagesPayload =
     imagesFromBody.length > 0
       ? imagesFromBody
@@ -80,8 +84,17 @@ export async function POST(req: Request) {
             })),
           }
         : undefined,
+      media: mediaFromBody.length
+        ? {
+            create: mediaFromBody.map((item, index) => ({
+              url: item.url,
+              kind: item.kind,
+              sortOrder: index,
+            })),
+          }
+        : undefined,
     },
-    include: { images: true },
+    include: { images: true, media: true },
   });
 
   revalidateShop(product.slug);

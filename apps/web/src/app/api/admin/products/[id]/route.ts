@@ -6,7 +6,7 @@ import {
 } from "@shaan-e-taj/database";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { revalidateShop } from "@/lib/revalidate-shop";
-import { normalizeProductImages } from "@/lib/product-media";
+import { normalizeProductImages, normalizeProductMedia } from "@/lib/product-media";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -20,7 +20,7 @@ export async function PATCH(req: Request, { params }: Params) {
 
   const existing = await prisma.product.findUnique({
     where: { id },
-    include: { images: true },
+    include: { images: true, media: true },
   });
   if (!existing) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
@@ -69,7 +69,7 @@ export async function PATCH(req: Request, { params }: Params) {
   let updated = await prisma.product.update({
     where: { id },
     data,
-    include: { images: true },
+    include: { images: true, media: true },
   });
 
   if (body.images !== undefined) {
@@ -88,7 +88,7 @@ export async function PATCH(req: Request, { params }: Params) {
     }
     const refreshed = await prisma.product.findUnique({
       where: { id },
-      include: { images: { orderBy: { sortOrder: "asc" } } },
+      include: { images: { orderBy: { sortOrder: "asc" } }, media: { orderBy: { sortOrder: "asc" } } },
     });
     if (refreshed) updated = refreshed;
   } else if (body.imageUrl !== undefined) {
@@ -105,7 +105,30 @@ export async function PATCH(req: Request, { params }: Params) {
     }
     const refreshed = await prisma.product.findUnique({
       where: { id },
-      include: { images: { orderBy: { sortOrder: "asc" } } },
+      include: { images: { orderBy: { sortOrder: "asc" } }, media: { orderBy: { sortOrder: "asc" } } },
+    });
+    if (refreshed) updated = refreshed;
+  }
+
+  if (body.media !== undefined) {
+    const media = normalizeProductMedia(body.media);
+    await prisma.productMedia.deleteMany({ where: { productId: id } });
+    if (media.length) {
+      await prisma.productMedia.createMany({
+        data: media.map((item, index) => ({
+          productId: id,
+          url: item.url,
+          kind: item.kind,
+          sortOrder: index,
+        })),
+      });
+    }
+    const refreshed = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        images: { orderBy: { sortOrder: "asc" } },
+        media: { orderBy: { sortOrder: "asc" } },
+      },
     });
     if (refreshed) updated = refreshed;
   }

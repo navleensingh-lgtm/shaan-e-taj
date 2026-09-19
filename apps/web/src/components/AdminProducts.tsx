@@ -11,6 +11,7 @@ import {
   validateInstagramReelUrl,
   validateMediaUrl,
   validateYouTubeUrl,
+  videoEmbed,
 } from "@/lib/product-media";
 
 type ProductRow = {
@@ -69,7 +70,9 @@ export function AdminProducts() {
   const [uploading, setUploading] = useState(false);
   const [syncMsg, setSyncMsg] = useState("");
   const [uploadError, setUploadError] = useState("");
-  const [imageUrlInput, setImageUrlInput] = useState("");
+  const [draggedImgIdx, setDraggedImgIdx] = useState<number | null>(null);
+  const [dragOverImages, setDragOverImages] = useState(false);
+  const [dragOverVideo, setDragOverVideo] = useState(false);
   const [youtubeInput, setYoutubeInput] = useState("");
   const [instagramInput, setInstagramInput] = useState("");
   const [mediaUrlInput, setMediaUrlInput] = useState("");
@@ -116,53 +119,55 @@ export function AdminProducts() {
     }
   }
 
-  async function onImageFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > MAX_PRODUCT_IMAGE_SIZE) {
-      setUploadError("Image must be 500 MB or smaller.");
-      e.target.value = "";
-      return;
+  async function handleImageFiles(fileList: FileList | File[]) {
+    const files = Array.from(fileList);
+    if (!files.length) return;
+
+    for (const file of files) {
+      if (file.size > MAX_PRODUCT_IMAGE_SIZE) {
+        setUploadError(`"${file.name}" exceeds the 500 MB limit.`);
+        return;
+      }
     }
-    await uploadFile(file, (url) => {
-      setImages((prev) => {
-        const next = [...prev, { id: uid(), url, isPrimary: prev.length === 0 }];
-        return next;
-      });
-    });
-    e.target.value = "";
+
+    setUploading(true);
+    setUploadError("");
+    try {
+      for (const file of files) {
+        const { url, storage } = await uploadAdminImage(file);
+        setImages((prev) => [...prev, { id: uid(), url, isPrimary: prev.length === 0 }]);
+        setSyncMsg(
+          storage === "local"
+            ? "File saved on server. Click Update/Publish to show on the website."
+            : "Upload successful. Click Update/Publish to publish."
+        );
+      }
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   }
 
-  async function onVideoFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+  async function handleVideoFile(file: File) {
     if (!file) return;
     if (file.size > MAX_PRODUCT_VIDEO_SIZE) {
       setUploadError("Video must be 1 GB or smaller.");
-      e.target.value = "";
       return;
     }
     await uploadFile(file, (url) => {
       setMediaItems((prev) => [...prev, { id: uid(), url, kind: "VIDEO" }]);
     });
-    e.target.value = "";
   }
 
-  function addImageUrl() {
-    const url = imageUrlInput.trim();
-    if (!url) return;
-    try {
-      const parsed = new URL(url);
-      if (!["http:", "https:"].includes(parsed.protocol)) {
-        setUploadError("Image URL must start with http:// or https://");
-        return;
-      }
-    } catch {
-      setUploadError("Enter a valid image URL");
-      return;
-    }
-    setImages((prev) => [...prev, { id: uid(), url, isPrimary: prev.length === 0 }]);
-    setImageUrlInput("");
-    setUploadError("");
+  function reorderImagesByDrag(sourceIdx: number, targetIdx: number) {
+    if (sourceIdx === targetIdx) return;
+    setImages((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(sourceIdx, 1);
+      next.splice(targetIdx, 0, moved);
+      return next;
+    });
   }
 
   function addYoutube() {
@@ -248,7 +253,6 @@ export function AdminProducts() {
       inStock: p.inStock,
       isNewArrival: p.isNewArrival,
     });
-    setImageUrlInput("");
     setYoutubeInput("");
     setInstagramInput("");
     setMediaUrlInput("");
@@ -274,7 +278,6 @@ export function AdminProducts() {
     setForm(emptyForm);
     setImages([]);
     setMediaItems([]);
-    setImageUrlInput("");
     setYoutubeInput("");
     setInstagramInput("");
     setMediaUrlInput("");
@@ -515,251 +518,389 @@ export function AdminProducts() {
               />
             </label>
 
-            {/* 1. Product Images */}
+            {/* PRODUCT MEDIA SECTION */}
             <div className="md:col-span-2 rounded-sm border border-brand-border bg-white p-5 shadow-xs">
               <div className="border-b border-brand-border/60 pb-3">
-                <p className="text-base font-medium text-brand-text">Product Images</p>
+                <p className="text-base font-medium uppercase tracking-wider text-brand-text">PRODUCT MEDIA</p>
                 <p className="mt-1 text-xs text-brand-muted">
-                  Upload JPG, PNG, WebP, HEIC (max 500 MB each) or add image by URL. Set one image as primary thumbnail.
+                  Manage product images and video in one place. Images appear in the gallery; video plays alongside the product.
                 </p>
               </div>
 
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div className="rounded border border-dashed border-brand-border p-4 bg-ivory-2/40">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-brand-text">Upload Image</p>
-                  <p className="mt-0.5 text-[11px] text-brand-muted">From your computer or phone (up to 500 MB)</p>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-                    disabled={uploading}
-                    onChange={onImageFile}
-                    className="mt-2.5 block w-full text-xs text-brand-text file:mr-3 file:rounded-sm file:border-0 file:bg-rose file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-white hover:file:bg-rose-dark cursor-pointer"
-                  />
-                </div>
+              {/* Side-by-side on desktop (grid-cols-1 lg:grid-cols-2), stacked on mobile */}
+              <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {/* LEFT COLUMN: Product Images */}
+                <div className="flex flex-col rounded-sm border border-brand-border/70 bg-ivory/30 p-4">
+                  <div className="flex items-center justify-between border-b border-brand-border/40 pb-2">
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-brand-text">
+                      Product Images {images.length > 0 && `(${images.length})`}
+                    </h3>
+                    <span className="text-[11px] text-brand-muted">Max 500 MB per image</span>
+                  </div>
 
-                <div className="rounded border border-brand-border/80 p-4 bg-white">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-brand-text">Or Add Image URL</p>
-                  <p className="mt-0.5 text-[11px] text-brand-muted">Direct link to hosted image (https://…)</p>
-                  <div className="mt-2.5 flex gap-2">
+                  {/* Drag & Drop / Click Upload Area */}
+                  <label
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverImages(true);
+                    }}
+                    onDragLeave={() => setDragOverImages(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragOverImages(false);
+                      if (e.dataTransfer.files?.length) {
+                        handleImageFiles(e.dataTransfer.files);
+                      }
+                    }}
+                    className={`mt-3 flex flex-col items-center justify-center rounded border-2 border-dashed p-6 text-center cursor-pointer transition-colors ${
+                      dragOverImages
+                        ? "border-rose bg-rose/10 text-rose"
+                        : "border-brand-border bg-white hover:border-rose/60 hover:bg-ivory-2/50 text-brand-muted"
+                    }`}
+                  >
                     <input
-                      className="min-w-0 flex-1 border border-brand-border px-3 py-1.5 text-xs focus:border-rose focus:outline-none"
-                      placeholder="https://example.com/image.jpg"
-                      value={imageUrlInput}
-                      onChange={(e) => setImageUrlInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          addImageUrl();
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                      multiple
+                      disabled={uploading}
+                      onChange={(e) => {
+                        if (e.target.files?.length) {
+                          handleImageFiles(e.target.files);
+                          e.target.value = "";
                         }
                       }}
+                      className="hidden"
                     />
-                    <button
-                      type="button"
-                      onClick={addImageUrl}
-                      className="rounded-sm border border-brand-border bg-ivory-2 px-3 py-1.5 text-xs font-medium uppercase tracking-wider hover:bg-ivory"
-                    >
-                      Add URL
-                    </button>
+                    <svg className="h-8 w-8 text-rose mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-xs font-medium text-brand-text">Drag &amp; drop images here</p>
+                    <p className="text-[11px] text-brand-subtle mt-0.5">or <span className="text-rose underline font-semibold">Click to upload</span></p>
+                    <p className="text-[10px] text-brand-subtle mt-1.5">JPG, PNG, WebP, HEIC &bull; Maximum 500 MB per image</p>
+                    <p className="text-[10px] text-brand-subtle">Select multiple files at once</p>
+                  </label>
+
+                  {/* Uploading progress indicator */}
+                  {uploading && (
+                    <div className="mt-3 flex items-center justify-center gap-2 rounded bg-rose/10 p-2 text-xs text-rose font-medium animate-pulse">
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      Uploading media to storage…
+                    </div>
+                  )}
+
+                  {/* Uploaded Images Thumbnails Grid */}
+                  {images.length > 0 ? (
+                    <div className="mt-4 flex-1">
+                      <div className="flex items-center justify-between text-[11px] text-brand-muted pb-1.5">
+                        <span>Drag thumbnails to reorder</span>
+                        <span>Click star to set Primary</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+                        {images.map((img, idx) => (
+                          <div
+                            key={img.id}
+                            draggable
+                            onDragStart={() => setDraggedImgIdx(idx)}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={() => {
+                              if (draggedImgIdx !== null) {
+                                reorderImagesByDrag(draggedImgIdx, idx);
+                                setDraggedImgIdx(null);
+                              }
+                            }}
+                            className={`group relative aspect-[3/4] overflow-hidden rounded border bg-white shadow-2xs transition-all cursor-move ${
+                              img.isPrimary
+                                ? "border-rose ring-2 ring-rose ring-offset-1"
+                                : "border-brand-border/70 hover:border-brand-border"
+                            }`}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={img.url} alt="" className="h-full w-full object-cover select-none pointer-events-none" />
+
+                            {/* Primary Badge or Selector Button */}
+                            {img.isPrimary ? (
+                              <span className="absolute left-1 top-1 rounded bg-rose px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white shadow-xs">
+                                Primary
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setPrimaryImage(img.id)}
+                                title="Set as primary"
+                                className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-white opacity-0 group-hover:opacity-100 hover:bg-rose transition"
+                              >
+                                Set Primary
+                              </button>
+                            )}
+
+                            {/* Reorder Arrows & Remove Button Overlay */}
+                            <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/70 px-1 py-1 text-white opacity-0 group-hover:opacity-100 transition">
+                              <div className="flex gap-1">
+                                <button
+                                  type="button"
+                                  disabled={idx === 0}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    moveImage(img.id, -1);
+                                  }}
+                                  className="rounded px-1 text-[10px] hover:bg-white/20 disabled:opacity-30"
+                                  title="Move left"
+                                >
+                                  ◀
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={idx === images.length - 1}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    moveImage(img.id, 1);
+                                  }}
+                                  className="rounded px-1 text-[10px] hover:bg-white/20 disabled:opacity-30"
+                                  title="Move right"
+                                >
+                                  ▶
+                                </button>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setImages((prev) => {
+                                    const next = prev.filter((i) => i.id !== img.id);
+                                    if (img.isPrimary && next.length) next[0].isPrimary = true;
+                                    return next;
+                                  });
+                                }}
+                                className="rounded px-1 text-[10px] text-red-300 hover:bg-red-500/30 hover:text-white"
+                                title="Remove image"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-4 flex flex-1 items-center justify-center rounded border border-dashed border-brand-border/60 bg-white/60 p-4 text-center text-xs text-brand-subtle">
+                      No images added yet. Drag or browse images above.
+                    </div>
+                  )}
+                </div>
+
+                {/* RIGHT COLUMN: Product Video */}
+                <div className="flex flex-col rounded-sm border border-brand-border/70 bg-ivory/30 p-4">
+                  <div className="flex items-center justify-between border-b border-brand-border/40 pb-2">
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-brand-text">
+                      Product Video {mediaItems.length > 0 && `(${mediaItems.length})`}
+                    </h3>
+                    <span className="text-[11px] text-brand-muted">Max 1 GB</span>
                   </div>
+
+                  {/* Video Drag & Drop / Click Upload Area */}
+                  <label
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverVideo(true);
+                    }}
+                    onDragLeave={() => setDragOverVideo(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragOverVideo(false);
+                      const file = e.dataTransfer.files?.[0];
+                      if (file) handleVideoFile(file);
+                    }}
+                    className={`mt-3 flex flex-col items-center justify-center rounded border-2 border-dashed p-4 text-center cursor-pointer transition-colors ${
+                      dragOverVideo
+                        ? "border-rose bg-rose/10 text-rose"
+                        : "border-brand-border bg-white hover:border-rose/60 hover:bg-ivory-2/50 text-brand-muted"
+                    }`}
+                  >
+                    <input
+                      type="file"
+                      accept="video/mp4,video/webm,video/quicktime"
+                      disabled={uploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleVideoFile(file);
+                        e.target.value = "";
+                      }}
+                      className="hidden"
+                    />
+                    <svg className="h-7 w-7 text-rose mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-xs font-medium text-brand-text">Drag &amp; drop video here</p>
+                    <p className="text-[11px] text-brand-subtle mt-0.5">or <span className="text-rose underline font-semibold">Click to upload</span></p>
+                    <p className="text-[10px] text-brand-subtle mt-1">MP4, WebM, MOV &bull; Up to 1000 MB (1 GB)</p>
+                  </label>
+
+                  {/* Video URL Inputs (YouTube / Instagram Reel / Direct URL) */}
+                  <div className="mt-3 rounded border border-brand-border/70 bg-white p-3 space-y-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-text">Or Add Video Link</p>
+
+                    <div className="flex gap-2">
+                      <input
+                        className="min-w-0 flex-1 border border-brand-border px-2.5 py-1 text-xs focus:border-rose focus:outline-none"
+                        placeholder="YouTube video or Shorts URL"
+                        value={youtubeInput}
+                        onChange={(e) => setYoutubeInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addYoutube();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={addYoutube}
+                        className="rounded-sm border border-brand-border bg-ivory-2 px-3 py-1 text-xs font-medium uppercase tracking-wider hover:bg-ivory shrink-0"
+                      >
+                        + YouTube
+                      </button>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        className="min-w-0 flex-1 border border-brand-border px-2.5 py-1 text-xs focus:border-rose focus:outline-none"
+                        placeholder="Instagram Reel or Post URL"
+                        value={instagramInput}
+                        onChange={(e) => setInstagramInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addInstagram();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={addInstagram}
+                        className="rounded-sm border border-brand-border bg-ivory-2 px-3 py-1 text-xs font-medium uppercase tracking-wider hover:bg-ivory shrink-0"
+                      >
+                        + Reel
+                      </button>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        className="min-w-0 flex-1 border border-brand-border px-2.5 py-1 text-xs focus:border-rose focus:outline-none"
+                        placeholder="Direct video URL (https://…/video.mp4)"
+                        value={mediaUrlInput}
+                        onChange={(e) => setMediaUrlInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addMediaUrl();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={addMediaUrl}
+                        className="rounded-sm border border-brand-border bg-ivory-2 px-3 py-1 text-xs font-medium uppercase tracking-wider hover:bg-ivory shrink-0"
+                      >
+                        + URL
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Video Previews and Media Item List */}
+                  {mediaItems.length > 0 ? (
+                    <div className="mt-4 flex-1 space-y-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-muted">
+                        Attached Video ({mediaItems.length})
+                      </p>
+                      {mediaItems.map((m, index) => {
+                        const embed = videoEmbed(m.url);
+                        return (
+                          <div
+                            key={m.id}
+                            className="rounded border border-brand-border/70 bg-white p-2.5 shadow-2xs space-y-2"
+                          >
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="rounded bg-rose/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose">
+                                {m.kind}
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  disabled={index === 0}
+                                  onClick={() => moveMedia(m.id, -1)}
+                                  className="rounded border border-brand-border px-1.5 py-0.5 text-[10px] hover:bg-ivory-2 disabled:opacity-30"
+                                  title="Move up"
+                                >
+                                  ↑
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={index === mediaItems.length - 1}
+                                  onClick={() => moveMedia(m.id, 1)}
+                                  className="rounded border border-brand-border px-1.5 py-0.5 text-[10px] hover:bg-ivory-2 disabled:opacity-30"
+                                  title="Move down"
+                                >
+                                  ↓
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setMediaItems((p) => p.filter((i) => i.id !== m.id))}
+                                  className="rounded border border-rose/30 px-2 py-0.5 text-[10px] text-rose hover:bg-rose/10"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* In-Admin Preview of the video/link */}
+                            <div className="aspect-video w-full overflow-hidden rounded bg-black">
+                              {embed.type === "video" ? (
+                                <video
+                                  src={embed.src}
+                                  controls
+                                  playsInline
+                                  preload="metadata"
+                                  className="h-full w-full object-contain"
+                                />
+                              ) : embed.type === "instagram" ? (
+                                <div className="flex h-full flex-col items-center justify-center p-3 text-center text-white bg-neutral-900">
+                                  <p className="text-xs text-white/90">Instagram Reel attached</p>
+                                  <a
+                                    href={embed.canonicalUrl ?? m.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-2 rounded border border-white/40 px-3 py-1 text-[10px] uppercase tracking-wider text-white hover:bg-white/10"
+                                  >
+                                    Preview on Instagram ↗
+                                  </a>
+                                </div>
+                              ) : (
+                                <iframe
+                                  src={embed.src}
+                                  title={`Video ${index + 1}`}
+                                  className="h-full w-full border-0"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                  loading="lazy"
+                                />
+                              )}
+                            </div>
+
+                            <p className="break-all font-mono text-[10px] text-brand-subtle">{m.url}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="mt-4 flex flex-1 items-center justify-center rounded border border-dashed border-brand-border/60 bg-white/60 p-4 text-center text-xs text-brand-subtle">
+                      No video attached. Drag, upload, or paste a link above.
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {uploading && <p className="mt-3 text-xs text-rose animate-pulse">Uploading file to storage…</p>}
-
-              {images.length > 0 && (
-                <div className="mt-5">
-                  <p className="text-xs font-medium uppercase tracking-wider text-brand-muted">Added Images ({images.length})</p>
-                  <ul className="mt-2 space-y-2.5">
-                    {images.map((img, index) => (
-                      <li key={img.id} className="flex flex-wrap items-center gap-3 rounded border border-brand-border/60 bg-ivory-2/20 p-2.5">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={img.url} alt="" className="h-16 w-14 rounded object-cover border border-brand-border" />
-                        <div className="min-w-0 flex-1 text-xs text-brand-subtle break-all font-mono">{img.url}</div>
-                        <label className="flex items-center gap-1.5 text-xs font-medium text-brand-text cursor-pointer">
-                          <input
-                            type="radio"
-                            name="primary-image"
-                            checked={img.isPrimary}
-                            onChange={() => setPrimaryImage(img.id)}
-                            className="text-rose focus:ring-rose"
-                          />
-                          Primary
-                        </label>
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            className="rounded border border-brand-border px-2 py-1 text-xs hover:bg-ivory-2 disabled:opacity-30"
-                            onClick={() => moveImage(img.id, -1)}
-                            disabled={index === 0}
-                            title="Move up"
-                          >
-                            ↑
-                          </button>
-                          <button
-                            type="button"
-                            className="rounded border border-brand-border px-2 py-1 text-xs hover:bg-ivory-2 disabled:opacity-30"
-                            onClick={() => moveImage(img.id, 1)}
-                            disabled={index === images.length - 1}
-                            title="Move down"
-                          >
-                            ↓
-                          </button>
-                          <button
-                            type="button"
-                            className="ml-1 rounded border border-rose/30 px-2 py-1 text-xs text-rose hover:bg-rose/10"
-                            onClick={() =>
-                              setImages((prev) => {
-                                const next = prev.filter((i) => i.id !== img.id);
-                                if (img.isPrimary && next.length) next[0].isPrimary = true;
-                                return next;
-                              })
-                            }
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            {/* 2. Product Video */}
-            <div className="md:col-span-2 rounded-sm border border-brand-border bg-white p-5 shadow-xs">
-              <div className="border-b border-brand-border/60 pb-3">
-                <p className="text-base font-medium text-brand-text">Product Video</p>
-                <p className="mt-1 text-xs text-brand-muted">
-                  Upload an MP4 / WebM / MOV video (up to 1 GB) or paste a YouTube / Instagram Reel link.
-                </p>
-              </div>
-
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div className="rounded border border-dashed border-brand-border p-4 bg-ivory-2/40">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-brand-text">Upload Video</p>
-                  <p className="mt-0.5 text-[11px] text-brand-muted">Direct MP4, WebM, or MOV up to 1000 MB (1 GB)</p>
-                  <input
-                    type="file"
-                    accept="video/mp4,video/webm,video/quicktime"
-                    disabled={uploading}
-                    onChange={onVideoFile}
-                    className="mt-2.5 block w-full text-xs text-brand-text file:mr-3 file:rounded-sm file:border-0 file:bg-rose file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-white hover:file:bg-rose-dark cursor-pointer"
-                  />
-                </div>
-
-                <div className="rounded border border-brand-border/80 p-4 bg-white space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-brand-text">Paste Video Link</p>
-
-                  <div className="flex gap-2">
-                    <input
-                      className="min-w-0 flex-1 border border-brand-border px-3 py-1.5 text-xs focus:border-rose focus:outline-none"
-                      placeholder="YouTube or Shorts URL"
-                      value={youtubeInput}
-                      onChange={(e) => setYoutubeInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          addYoutube();
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={addYoutube}
-                      className="rounded-sm border border-brand-border bg-ivory-2 px-3 py-1.5 text-xs font-medium uppercase tracking-wider hover:bg-ivory shrink-0"
-                    >
-                      + YouTube
-                    </button>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <input
-                      className="min-w-0 flex-1 border border-brand-border px-3 py-1.5 text-xs focus:border-rose focus:outline-none"
-                      placeholder="Instagram Reel URL"
-                      value={instagramInput}
-                      onChange={(e) => setInstagramInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          addInstagram();
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={addInstagram}
-                      className="rounded-sm border border-brand-border bg-ivory-2 px-3 py-1.5 text-xs font-medium uppercase tracking-wider hover:bg-ivory shrink-0"
-                    >
-                      + Reel
-                    </button>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <input
-                      className="min-w-0 flex-1 border border-brand-border px-3 py-1.5 text-xs focus:border-rose focus:outline-none"
-                      placeholder="Direct video URL (https://…/video.mp4)"
-                      value={mediaUrlInput}
-                      onChange={(e) => setMediaUrlInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          addMediaUrl();
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={addMediaUrl}
-                      className="rounded-sm border border-brand-border bg-ivory-2 px-3 py-1.5 text-xs font-medium uppercase tracking-wider hover:bg-ivory shrink-0"
-                    >
-                      + URL
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {mediaItems.length > 0 && (
-                <div className="mt-5">
-                  <p className="text-xs font-medium uppercase tracking-wider text-brand-muted">Added Videos ({mediaItems.length})</p>
-                  <ul className="mt-2 space-y-2">
-                    {mediaItems.map((m, index) => (
-                      <li key={m.id} className="flex flex-wrap items-center gap-2.5 rounded border border-brand-border/60 bg-ivory-2/20 p-2.5 text-xs">
-                        <span className="rounded bg-rose/10 text-rose-dark px-2 py-0.5 font-medium uppercase tracking-wider text-[10px]">
-                          {m.kind}
-                        </span>
-                        <span className="min-w-0 flex-1 break-all font-mono text-[11px] text-brand-subtle">{m.url}</span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            className="rounded border border-brand-border px-2 py-1 text-xs hover:bg-ivory-2 disabled:opacity-30"
-                            onClick={() => moveMedia(m.id, -1)}
-                            disabled={index === 0}
-                            title="Move up"
-                          >
-                            ↑
-                          </button>
-                          <button
-                            type="button"
-                            className="rounded border border-brand-border px-2 py-1 text-xs hover:bg-ivory-2 disabled:opacity-30"
-                            onClick={() => moveMedia(m.id, 1)}
-                            disabled={index === mediaItems.length - 1}
-                            title="Move down"
-                          >
-                            ↓
-                          </button>
-                          <button
-                            type="button"
-                            className="ml-1 rounded border border-rose/30 px-2 py-1 text-xs text-rose hover:bg-rose/10"
-                            onClick={() => setMediaItems((p) => p.filter((i) => i.id !== m.id))}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
             </div>
 
             <label className="text-sm md:col-span-2">

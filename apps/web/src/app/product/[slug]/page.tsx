@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StitchingOptions } from "./StitchingOptions";
 import { ProductMediaGallery } from "@/components/ProductMediaGallery";
+import { ProductImageGallery } from "@/components/ProductImageGallery";
 
 function apiBase(): string {
   if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
@@ -54,34 +55,7 @@ export default async function ProductPage({
     <section className="mx-auto max-w-6xl px-5 py-12 lg:px-8">
       <div className="grid gap-10 lg:grid-cols-2">
         <div>
-          <div className="relative aspect-[3/4] overflow-hidden rounded bg-ivory-2">
-            {primary?.url && (
-              <Image
-                src={primary.url}
-                alt={product.name}
-                fill
-                className="object-cover"
-                priority
-                unoptimized={primary.url.startsWith("data:")}
-              />
-            )}
-          </div>
-          {gallery.length > 0 && (
-            <div className="mt-3 grid grid-cols-4 gap-2">
-              {gallery.map((img: { url: string }, index: number) => (
-                <div key={`${img.url}-${index}`} className="relative aspect-[3/4] overflow-hidden rounded bg-ivory-2">
-                  <Image
-                    src={img.url}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    unoptimized={img.url.startsWith("data:")}
-                    sizes="120px"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          <ProductImageGallery images={sortedImages} productName={product.name} />
         </div>
         <div>
           <p className="text-[10px] uppercase tracking-[0.2em] text-rose">

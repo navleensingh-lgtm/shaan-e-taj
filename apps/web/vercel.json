@@ -1,4 +1,4 @@
 {
   "installCommand": "npm install --include=optional",
-  "buildCommand": "npm run build -w @shaan-e-taj/database && npm run build -w @shaan-e-taj/web"
+  "buildCommand": "npx prisma migrate deploy --schema packages/database/prisma/schema.prisma && npm run build -w @shaan-e-taj/database && npm run build -w @shaan-e-taj/web"
 }

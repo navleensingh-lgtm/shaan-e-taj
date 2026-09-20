@@ -20,6 +20,11 @@ export function SiteNav() {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
 
+  // Ensure mobile menu closes automatically when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -37,12 +42,18 @@ export function SiteNav() {
       }`}
     >
       <div className="mx-auto flex h-[64px] max-w-7xl items-center justify-between gap-4 px-5 lg:px-8">
-        <div>
-          <Link href="/" className="serif text-[22px] font-normal tracking-[0.14em] text-brand-text hover:text-espresso transition-colors">
+        <Link
+          href="/"
+          className="group flex flex-col items-start justify-center cursor-pointer select-none py-1 focus:outline-none"
+          aria-label="Shaan-e-Taj Homepage"
+        >
+          <span className="serif text-[22px] font-normal tracking-[0.14em] text-brand-text group-hover:text-espresso transition-colors">
             Shaan<span className="text-gold">·</span>e·Taj
-          </Link>
-          <p className="text-[9px] uppercase tracking-[0.2em] text-gold font-medium">Jalandhar</p>
-        </div>
+          </span>
+          <span className="text-[9px] uppercase tracking-[0.2em] text-gold font-medium -mt-0.5">
+            Jalandhar
+          </span>
+        </Link>
 
         <ul className="hidden items-center gap-6 lg:gap-8 md:flex">
           {primaryLinks.map((l) => {

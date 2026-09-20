@@ -17,3 +17,4 @@ apps/web/public/uploads/products/*
 packages/packages/
 
 .vercel
+.env*

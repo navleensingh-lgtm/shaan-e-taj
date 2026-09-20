@@ -13,7 +13,7 @@ export function NavAuth() {
     return (
       <Link
         href="/login"
-        className="text-[11px] uppercase tracking-[0.12em] text-brand-muted transition hover:text-rose-dark"
+        className="flex min-h-[44px] items-center px-1 text-[11px] uppercase tracking-[0.12em] text-brand-muted transition hover:text-rose-dark"
       >
         Login
       </Link>
@@ -26,24 +26,24 @@ export function NavAuth() {
     "Account";
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 sm:gap-3">
       <Link
         href="/account"
-        className="hidden text-[11px] uppercase tracking-[0.12em] text-brand-muted transition hover:text-rose-dark sm:inline"
+        className="hidden min-h-[44px] items-center text-[11px] uppercase tracking-[0.12em] text-brand-muted transition hover:text-rose-dark sm:inline-flex"
         title="My account"
       >
         {label}
       </Link>
       <Link
         href="/account"
-        className="text-[11px] uppercase tracking-[0.12em] text-brand-muted transition hover:text-rose-dark sm:hidden"
+        className="flex min-h-[44px] items-center text-[11px] uppercase tracking-[0.12em] text-brand-muted transition hover:text-rose-dark sm:hidden"
       >
         Account
       </Link>
       <button
         type="button"
         onClick={() => signOut({ callbackUrl: "/" })}
-        className="text-[11px] uppercase tracking-[0.12em] text-brand-subtle hover:text-rose-dark"
+        className="flex min-h-[44px] items-center text-[11px] uppercase tracking-[0.12em] text-brand-subtle hover:text-rose-dark"
       >
         Log out
       </button>

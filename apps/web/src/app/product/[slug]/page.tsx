@@ -113,18 +113,18 @@ export default async function ProductPage({
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12 text-brand-text">
+    <div className="mx-auto max-w-7xl px-3.5 py-5 sm:px-6 lg:px-8 lg:py-12 text-brand-text">
       {/* Breadcrumb Bar */}
-      <nav className="mb-6 flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-brand-subtle">
+      <nav className="mb-4 sm:mb-6 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] uppercase tracking-[0.16em] text-brand-subtle">
         <Link href="/" className="hover:text-rose-dark transition">Home</Link>
         <span>/</span>
         <Link href="/catalog" className="hover:text-rose-dark transition">Catalog</Link>
         <span>/</span>
-        <span className="text-brand-muted truncate max-w-[200px] sm:max-w-none">{product.name}</span>
+        <span className="text-brand-muted truncate max-w-[150px] sm:max-w-none">{product.name}</span>
       </nav>
 
       {/* Main Product Layout: Editorial 2-Column */}
-      <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div className="grid gap-6 sm:gap-10 lg:grid-cols-12 lg:gap-14">
         {/* Left Column: Media Gallery (7 Cols on LG) */}
         <div className="lg:col-span-7">
           <LuxuryProductGallery
@@ -149,11 +149,11 @@ export default async function ProductPage({
           </div>
 
           {/* Title & SKU */}
-          <h1 className="serif mt-2 text-3xl sm:text-4xl text-brand-text font-normal leading-tight">
+          <h1 className="serif mt-1.5 sm:mt-2 text-2xl sm:text-4xl text-brand-text font-normal leading-tight">
             {product.name}
           </h1>
 
-          <div className="mt-2 flex items-center justify-between text-xs text-brand-subtle">
+          <div className="mt-1.5 sm:mt-2 flex items-center justify-between text-xs text-brand-subtle">
             <span className="font-mono text-[11px]">SKU: {sku}</span>
             <div className="flex items-center gap-2">
               <WishlistButton productId={product.id} />
@@ -162,16 +162,16 @@ export default async function ProductPage({
           </div>
 
           {/* Pricing */}
-          <div className="mt-4 flex items-baseline gap-3 border-b border-brand-border/60 pb-4">
+          <div className="mt-3 sm:mt-4 flex flex-wrap items-baseline gap-2 sm:gap-3 border-b border-brand-border/60 pb-3 sm:pb-4">
             <span className="text-2xl sm:text-3xl font-medium text-rose-dark">
               ₹{price.toLocaleString("en-IN")}
             </span>
             {onSale && (
-              <span className="text-base text-brand-subtle line-through">
+              <span className="text-sm sm:text-base text-brand-subtle line-through">
                 ₹{mrp!.toLocaleString("en-IN")}
               </span>
             )}
-            <span className="text-[11px] text-brand-muted uppercase tracking-wider">
+            <span className="w-full sm:w-auto text-[10px] sm:text-[11px] text-brand-muted uppercase tracking-wider">
               Taxes included · Free domestic shipping
             </span>
           </div>

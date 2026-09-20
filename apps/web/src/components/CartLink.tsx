@@ -8,9 +8,16 @@ export function CartLink() {
   return (
     <Link
       href="/cart"
-      className="text-[11px] uppercase tracking-[0.12em] text-brand-muted hover:text-rose-dark"
+      className="flex min-h-[44px] items-center px-2 text-[11px] uppercase tracking-[0.12em] text-brand-muted hover:text-rose-dark transition-colors"
     >
-      Cart{count > 0 ? ` (${count})` : ""}
+      <span className="flex items-center gap-1">
+        <span>Cart</span>
+        {count > 0 && (
+          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose text-[10px] font-bold text-white px-1">
+            {count}
+          </span>
+        )}
+      </span>
     </Link>
   );
 }

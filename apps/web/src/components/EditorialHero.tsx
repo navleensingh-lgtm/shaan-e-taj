@@ -32,7 +32,7 @@ export function EditorialHero({ videoUrl, fallbackImageUrl }: EditorialHeroProps
       : null;
 
   return (
-    <section className="relative flex min-h-[calc(100vh-68px)] items-center justify-center overflow-hidden bg-espresso text-ivory">
+    <section className="relative flex min-h-[85svh] sm:min-h-[calc(100vh-68px)] items-center justify-center overflow-hidden bg-espresso text-ivory">
       {/* Background Media */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Instant Fallback / Poster Image Layer (Always visible first) */}
@@ -76,33 +76,33 @@ export function EditorialHero({ videoUrl, fallbackImageUrl }: EditorialHeroProps
       </div>
 
       {/* Hero Foreground Content - Guaranteed to render immediately */}
-      <div className="relative z-10 max-w-3xl px-6 py-20 text-center sm:px-8">
+      <div className="relative z-10 max-w-3xl px-4 py-14 text-center sm:px-8 sm:py-20">
         {/* Subtle Gold Accent Divider */}
-        <div className="mx-auto mb-6 flex items-center justify-center gap-3 animate-editorial-reveal">
-          <span className="h-px w-10 bg-gold" />
-          <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-gold font-medium">
+        <div className="mx-auto mb-4 sm:mb-6 flex items-center justify-center gap-2.5 sm:gap-3 animate-editorial-reveal">
+          <span className="h-px w-8 sm:w-10 bg-gold" />
+          <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.25em] sm:tracking-[0.3em] text-gold font-medium">
             {siteConfig.legalName} · Jalandhar
           </span>
-          <span className="h-px w-10 bg-gold" />
+          <span className="h-px w-8 sm:w-10 bg-gold" />
         </div>
 
         {/* Editorial Heading */}
-        <h1 className="serif animate-editorial-reveal animation-delay-100 text-4xl sm:text-6xl md:text-7xl font-light leading-[1.12] text-ivory tracking-tight">
+        <h1 className="serif animate-editorial-reveal animation-delay-100 text-3xl sm:text-6xl md:text-7xl font-light leading-[1.15] text-ivory tracking-tight">
           Couture Defined by
           <br />
           <span className="italic font-serif text-gold-light">Artisanal Royalty</span>
         </h1>
 
         {/* Subtitle */}
-        <p className="mx-auto mt-6 max-w-xl animate-editorial-reveal animation-delay-200 text-xs sm:text-sm leading-relaxed text-ivory/80 font-light">
+        <p className="mx-auto mt-4 sm:mt-6 max-w-xl animate-editorial-reveal animation-delay-200 text-xs sm:text-sm leading-relaxed text-ivory/80 font-light">
           {siteConfig.description}
         </p>
 
         {/* Tactile CTAs */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4 animate-editorial-reveal animation-delay-300">
+        <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 animate-editorial-reveal animation-delay-300 w-full sm:w-auto px-4 sm:px-0">
           <Link
             href="/new-arrivals"
-            className="btn-luxury-primary group rounded-xs px-9 py-4 text-[11px] uppercase tracking-[0.22em] font-medium"
+            className="btn-luxury-primary group w-full sm:w-auto rounded-xs px-8 sm:px-9 py-3.5 sm:py-4 text-center text-[10px] sm:text-[11px] uppercase tracking-[0.22em] font-medium"
           >
             <span>Explore Collection</span>
             <span className="arrow-shift ml-2 text-gold">→</span>
@@ -110,7 +110,7 @@ export function EditorialHero({ videoUrl, fallbackImageUrl }: EditorialHeroProps
 
           <Link
             href="/custom-stitching"
-            className="btn-luxury-outline rounded-xs border-gold/40 text-ivory hover:border-gold hover:bg-gold/10 px-9 py-4 text-[11px] uppercase tracking-[0.22em] font-medium"
+            className="btn-luxury-outline w-full sm:w-auto rounded-xs border-gold/40 text-ivory hover:border-gold hover:bg-gold/10 px-8 sm:px-9 py-3.5 sm:py-4 text-center text-[10px] sm:text-[11px] uppercase tracking-[0.22em] font-medium"
           >
             Custom Stitching
           </Link>

@@ -55,7 +55,7 @@ export function SizeGuideModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="size-guide-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-8"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 md:p-8"
     >
       {/* Dimmed Backdrop */}
       <div
@@ -65,13 +65,13 @@ export function SizeGuideModal({
       />
 
       {/* Modal Container */}
-      <div className="relative flex max-h-[90vh] w-full max-w-4xl flex-col rounded-sm border border-[#e8ddd0] bg-[#faf7f2] shadow-2xl transition-all">
+      <div className="relative flex max-h-[92vh] sm:max-h-[90vh] w-full max-w-4xl flex-col rounded-sm border border-[#e8ddd0] bg-[#faf7f2] shadow-2xl transition-all">
         {/* Top Floating Close Button */}
         <button
           type="button"
           onClick={onClose}
           aria-label="Close size guide"
-          className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-brand-border bg-white/80 text-brand-text backdrop-blur-xs transition hover:bg-rose hover:text-white"
+          className="absolute right-3 top-3 sm:right-4 sm:top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-brand-border bg-white/90 text-brand-text backdrop-blur-xs transition hover:bg-rose hover:text-white active:scale-95 shadow-xs"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -79,7 +79,7 @@ export function SizeGuideModal({
         </button>
 
         {/* Scrollable Content Body */}
-        <div className="overflow-y-auto px-5 py-8 sm:px-10 sm:py-10 text-brand-text">
+        <div className="overflow-y-auto px-4 py-6 sm:px-10 sm:py-10 text-brand-text">
           {/* 1. Header Banner */}
           <div className="text-center">
             <div className="inline-flex items-center gap-2">
@@ -131,11 +131,11 @@ export function SizeGuideModal({
             </div>
 
             {/* Inches / CM Toggle Control */}
-            <div className="flex items-center rounded-sm border border-brand-border bg-white p-0.5 shadow-2xs">
+            <div className="flex items-center rounded-xs border border-brand-border bg-white p-1 shadow-2xs">
               <button
                 type="button"
                 onClick={() => setUnit("in")}
-                className={`rounded-xs px-3 py-1 text-xs font-medium uppercase tracking-wider transition ${
+                className={`min-h-[40px] px-4 rounded-xs text-xs font-semibold uppercase tracking-wider transition active:scale-95 ${
                   unit === "in"
                     ? "bg-rose text-white shadow-xs"
                     : "text-brand-muted hover:text-brand-text"
@@ -146,7 +146,7 @@ export function SizeGuideModal({
               <button
                 type="button"
                 onClick={() => setUnit("cm")}
-                className={`rounded-xs px-3 py-1 text-xs font-medium uppercase tracking-wider transition ${
+                className={`min-h-[40px] px-4 rounded-xs text-xs font-semibold uppercase tracking-wider transition active:scale-95 ${
                   unit === "cm"
                     ? "bg-rose text-white shadow-xs"
                     : "text-brand-muted hover:text-brand-text"

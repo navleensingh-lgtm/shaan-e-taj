@@ -131,33 +131,38 @@ export function ProductCard({ product }: Props) {
 
           {/* Luxury Badges */}
           {product.badge && !outOfStock && (
-            <span className="absolute left-2.5 top-2.5 rounded-xs border border-rose/30 bg-rose/90 px-2 py-0.5 text-[9px] uppercase tracking-widest text-white shadow-xs">
+            <span className="absolute left-1.5 top-1.5 sm:left-2.5 sm:top-2.5 rounded-xs border border-rose/30 bg-rose/90 px-1.5 py-0.5 text-[8px] sm:text-[9px] uppercase tracking-wider text-white shadow-xs">
               {product.badge}
             </span>
           )}
 
+          {/* Quick Wishlist on top right for mobile & desktop */}
+          <div className="absolute right-1.5 top-1.5 sm:right-2.5 sm:top-2.5 z-10">
+            <WishlistButton productId={product.id} />
+          </div>
+
           {videoMedia && !outOfStock && (
-            <span className="absolute right-2.5 top-2.5 flex items-center gap-1 rounded-xs bg-espresso/80 px-2 py-0.5 text-[9px] uppercase tracking-wider text-ivory backdrop-blur-xs border border-gold/30">
-              <span className="text-[8px] text-gold">▶</span>
-              <span>Video</span>
+            <span className="absolute left-1.5 bottom-1.5 sm:left-2.5 sm:bottom-2.5 flex items-center gap-1 rounded-xs bg-espresso/80 px-1.5 py-0.5 text-[8px] sm:text-[9px] uppercase tracking-wider text-ivory backdrop-blur-xs border border-gold/30">
+              <span className="text-[7px] sm:text-[8px] text-gold">▶</span>
+              <span className="hidden xs:inline">Video</span>
             </span>
           )}
         </div>
 
         {/* Product Details Hierarchy */}
-        <div className="mt-3.5">
-          <p className="text-[9px] uppercase tracking-[0.25em] text-brand-subtle font-medium">
+        <div className="mt-2.5 sm:mt-3.5">
+          <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] text-brand-subtle font-medium truncate">
             {product.subCategory.replace(/_/g, " ")}
           </p>
 
-          <h3 className="serif mt-1 text-lg sm:text-xl text-brand-text group-hover:text-rose-dark transition-colors duration-200 line-clamp-1">
+          <h3 className="serif mt-0.5 sm:mt-1 text-sm sm:text-lg text-brand-text group-hover:text-rose-dark transition-colors duration-200 line-clamp-2 min-h-[2.4rem] sm:min-h-0">
             {product.name}
           </h3>
 
-          <p className="mt-1 flex items-baseline gap-2 text-sm font-medium text-rose-dark">
+          <p className="mt-1 flex flex-wrap items-baseline gap-1.5 text-xs sm:text-sm font-medium text-rose-dark">
             <span>₹{price.toLocaleString("en-IN")}</span>
             {onSale && (
-              <span className="text-xs font-normal text-brand-subtle line-through">
+              <span className="text-[10px] sm:text-xs font-normal text-brand-subtle line-through">
                 ₹{mrp!.toLocaleString("en-IN")}
               </span>
             )}
@@ -166,16 +171,16 @@ export function ProductCard({ product }: Props) {
       </Link>
 
       {/* Tactile Action Buttons */}
-      <div className="mt-3 flex flex-col gap-2">
-        <div className="flex items-center gap-2">
+      <div className="mt-2.5 sm:mt-3 flex flex-col gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={orderNow}
             disabled={outOfStock || isOrdering}
-            className="btn-luxury-primary flex-1 py-2.5 rounded-xs text-[10px] uppercase tracking-[0.16em] font-medium disabled:opacity-50"
+            className="btn-luxury-primary flex-1 min-h-[38px] sm:min-h-[42px] py-2 sm:py-2.5 rounded-xs text-[9px] sm:text-[10px] uppercase tracking-[0.14em] font-medium disabled:opacity-50"
           >
             {isOrdering ? (
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center justify-center gap-1.5">
                 <span className="inline-block h-3 w-3 animate-spin rounded-full border border-ivory border-t-transparent" />
                 <span>Adding…</span>
               </span>
@@ -189,8 +194,9 @@ export function ProductCard({ product }: Props) {
             )}
           </button>
 
-          <WishlistButton productId={product.id} />
-          <ProductShareButton slug={product.slug} name={product.name} />
+          <div className="hidden sm:block">
+            <ProductShareButton slug={product.slug} name={product.name} />
+          </div>
         </div>
 
         <a
@@ -211,10 +217,10 @@ export function ProductCard({ product }: Props) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackEvent("whatsapp_click", { productId: product.id })}
-          className="btn-luxury-whatsapp flex items-center justify-center gap-1.5 rounded-xs py-2 text-[10px] uppercase tracking-wider font-medium"
+          className="btn-luxury-whatsapp flex min-h-[36px] items-center justify-center gap-1 rounded-xs py-1.5 sm:py-2 text-[9px] sm:text-[10px] uppercase tracking-wider font-medium"
         >
-          <span className="text-sm leading-none">💬</span>
-          <span>Order on WhatsApp</span>
+          <span className="text-xs sm:text-sm leading-none">💬</span>
+          <span className="truncate">WhatsApp Order</span>
         </a>
       </div>
     </article>

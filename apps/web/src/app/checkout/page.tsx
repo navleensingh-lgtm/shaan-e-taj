@@ -198,14 +198,14 @@ export default function CheckoutPage() {
   }
 
   return (
-    <section className="mx-auto max-w-2xl px-5 py-16 lg:px-8">
-      <h1 className="serif text-4xl">Checkout</h1>
-      <p className="mt-2 text-sm text-brand-muted">
+    <section className="mx-auto max-w-2xl px-3.5 py-6 sm:px-6 sm:py-16">
+      <h1 className="serif text-3xl sm:text-4xl">Checkout</h1>
+      <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-brand-muted">
         Enter shipping and billing details — we ship pan India from Jalandhar.
       </p>
 
-      <form onSubmit={pay} className="mt-8 space-y-8">
-        <div className="rounded-sm border border-brand-border bg-white p-6">
+      <form onSubmit={pay} className="mt-6 sm:mt-8 space-y-5 sm:space-y-8">
+        <div className="rounded-xs border border-brand-border bg-white p-4 sm:p-6 shadow-2xs">
           <AddressFields
             title="Shipping address"
             value={shipping}
@@ -214,7 +214,7 @@ export default function CheckoutPage() {
           />
         </div>
 
-        <div className="rounded-sm border border-brand-border bg-white p-6">
+        <div className="rounded-xs border border-brand-border bg-white p-4 sm:p-6 shadow-2xs">
           <label className="flex cursor-pointer items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -236,7 +236,7 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        <div className="rounded-sm border border-brand-border bg-white p-6">
+        <div className="rounded-xs border border-brand-border bg-white p-4 sm:p-6 shadow-2xs">
           <StitchingSelector
             value={stitchingType}
             onChange={setStitchingType}
@@ -252,12 +252,12 @@ export default function CheckoutPage() {
             value={orderNotes}
             onChange={(e) => setOrderNotes(e.target.value)}
             rows={2}
-            className="mt-1 w-full rounded-sm border border-brand-border bg-white px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-xs border border-brand-border bg-white px-3 py-2 text-base sm:text-sm outline-none focus:border-rose"
             placeholder="Delivery instructions, size notes…"
           />
         </label>
 
-        <div className="rounded-sm border border-brand-border bg-white p-6">
+        <div className="rounded-xs border border-brand-border bg-white p-4 sm:p-6 shadow-2xs">
           <OrderPricingSummary
             subtotalPaise={pricing.subtotalPaise}
             stitchingPaise={pricing.stitchingPaise}

@@ -25,15 +25,17 @@ export function StitchingSelector({ value, onChange, disabled, stitchChargeRupee
             type="button"
             disabled={disabled}
             onClick={() => onChange(s.value)}
-            className={`rounded-sm border px-3 py-2 text-sm transition ${
+            className={`min-h-[44px] rounded-xs border px-4 py-2.5 text-xs sm:text-sm font-medium transition cursor-pointer active:scale-95 ${
               value === s.value
-                ? "border-rose bg-rose text-white"
-                : "border-brand-border text-brand-muted hover:border-rose"
+                ? "border-espresso bg-espresso text-ivory shadow-xs"
+                : "border-brand-border bg-white text-brand-text hover:border-gold-dark hover:bg-ivory-2/60"
             } disabled:opacity-50`}
           >
             {s.label}
             {s.value === "FULLY_STITCHED" && stitchChargeRupees != null && stitchChargeRupees > 0 && (
-              <span className="ml-1 text-[10px] opacity-90">(+₹{stitchChargeRupees}/suit)</span>
+              <span className="ml-1.5 text-[10px] font-normal text-gold-light opacity-95">
+                (+₹{stitchChargeRupees}/suit)
+              </span>
             )}
           </button>
         ))}

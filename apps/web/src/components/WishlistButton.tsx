@@ -40,10 +40,10 @@ export function WishlistButton({ productId }: { productId: string }) {
     <button
       type="button"
       onClick={toggle}
-      className={`group relative flex h-9 w-9 items-center justify-center rounded-xs border transition-all duration-200 cursor-pointer active:scale-90 ${
+      className={`group relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border transition-all duration-200 cursor-pointer active:scale-90 shadow-2xs ${
         saved
-          ? "border-rose bg-rose/10 text-rose"
-          : "border-brand-border bg-white/90 text-brand-subtle hover:border-rose hover:text-rose"
+          ? "border-rose bg-rose/90 text-white"
+          : "border-brand-border/80 bg-white/95 text-brand-subtle hover:border-rose hover:text-rose backdrop-blur-xs"
       }`}
       aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
     >

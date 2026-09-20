@@ -182,7 +182,7 @@ export function StitchingOptions({ product }: ProductOptionsProps) {
         </div>
 
         {/* Sizes Buttons */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 sm:gap-2.5">
           {STANDARD_SIZES.map((sz) => {
             const isSelected = selectedSize === sz;
             return (
@@ -190,7 +190,7 @@ export function StitchingOptions({ product }: ProductOptionsProps) {
                 key={sz}
                 type="button"
                 onClick={() => setSelectedSize(sz)}
-                className={`min-w-[44px] h-10 rounded-xs border px-3 text-xs font-medium uppercase tracking-wider transition-all duration-200 cursor-pointer active:scale-95 ${
+                className={`min-w-[48px] h-11 rounded-xs border px-3 text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer active:scale-95 ${
                   isSelected
                     ? "border-espresso bg-espresso text-ivory shadow-xs"
                     : "border-brand-border bg-white text-brand-text hover:border-gold-dark hover:bg-ivory-2/60"
@@ -257,16 +257,16 @@ export function StitchingOptions({ product }: ProductOptionsProps) {
             type="button"
             aria-label="Decrease quantity"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="h-9 w-9 rounded-xs border border-brand-border text-lg leading-none hover:border-gold transition active:scale-90 cursor-pointer"
+            className="flex h-11 w-11 items-center justify-center rounded-xs border border-brand-border text-xl leading-none hover:border-gold transition active:scale-90 cursor-pointer bg-white"
           >
             −
           </button>
-          <span className="min-w-[2ch] text-center text-sm font-medium">{quantity}</span>
+          <span className="min-w-[3ch] text-center text-base font-medium">{quantity}</span>
           <button
             type="button"
             aria-label="Increase quantity"
             onClick={() => setQuantity((q) => q + 1)}
-            className="h-9 w-9 rounded-xs border border-brand-border text-lg leading-none hover:border-gold transition active:scale-90 cursor-pointer"
+            className="flex h-11 w-11 items-center justify-center rounded-xs border border-brand-border text-xl leading-none hover:border-gold transition active:scale-90 cursor-pointer bg-white"
           >
             +
           </button>
@@ -293,7 +293,7 @@ export function StitchingOptions({ product }: ProductOptionsProps) {
           type="button"
           onClick={orderNow}
           disabled={isOutOfStock}
-          className={`btn-luxury-primary group w-full rounded-xs py-4 text-[11px] uppercase tracking-[0.2em] font-medium ${
+          className={`btn-luxury-primary group w-full min-h-[48px] rounded-xs py-3.5 sm:py-4 text-[11px] uppercase tracking-[0.2em] font-medium ${
             isOutOfStock ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
@@ -312,7 +312,7 @@ export function StitchingOptions({ product }: ProductOptionsProps) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackEvent("whatsapp_click", { productId: product.id })}
-          className="btn-luxury-whatsapp flex w-full items-center justify-center gap-2 rounded-xs py-3.5 text-[11px] uppercase tracking-wider font-medium"
+          className="btn-luxury-whatsapp flex w-full min-h-[48px] items-center justify-center gap-2 rounded-xs py-3.5 text-[11px] uppercase tracking-wider font-medium"
         >
           <span className="text-base leading-none">💬</span>
           <span>Order on WhatsApp with Concierge</span>

@@ -3,7 +3,7 @@
 import type { AddressInput } from "@/lib/checkout-address";
 
 const inputClass =
-  "mt-1 w-full rounded-sm border border-brand-border bg-white px-3 py-2.5 text-sm outline-none focus:border-rose";
+  "mt-1 w-full rounded-xs border border-brand-border bg-white px-3 py-2.5 text-base sm:text-sm outline-none focus:border-rose shadow-2xs";
 
 type Props = {
   title: string;

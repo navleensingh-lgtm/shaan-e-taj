@@ -73,7 +73,7 @@ export function SiteNav() {
           })}
         </ul>
 
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <NavAuth />
           <CartLink />
           <Link
@@ -86,11 +86,11 @@ export function SiteNav() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className="flex h-9 w-9 items-center justify-center rounded-xs border border-brand-border text-brand-text md:hidden transition hover:border-gold"
+            className="flex h-11 w-11 items-center justify-center rounded-xs border border-brand-border text-brand-text md:hidden transition hover:border-gold active:scale-95"
             aria-label="Toggle navigation menu"
             aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? "✕" : "☰"}
+            <span className="text-lg">{mobileMenuOpen ? "✕" : "☰"}</span>
           </button>
         </div>
       </div>

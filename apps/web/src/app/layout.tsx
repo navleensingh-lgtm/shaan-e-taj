@@ -5,6 +5,7 @@ import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { Providers } from "@/components/Providers";
+import { FloatingCurrencySelector } from "@/components/FloatingCurrencySelector";
 import { siteConfig } from "@/lib/site-config";
 
 const cormorant = Cormorant_Garamond({
@@ -72,6 +73,7 @@ export default function RootLayout({
           <SiteNav />
           <main className="pt-[68px]">{children}</main>
           <SiteFooter />
+          <FloatingCurrencySelector />
           <WhatsAppFloat />
         </Providers>
       </body>

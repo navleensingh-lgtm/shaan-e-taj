@@ -16,6 +16,7 @@ export type PublicStoreSettings = PricingSettings & {
   instagramUrl: string;
   heroVideoUrl?: string | null;
   semiStitchChargePaise: number;
+  homepageCms?: any;
 };
 
 const defaults: PublicStoreSettings = {
@@ -59,6 +60,7 @@ export async function getPublicStoreSettings(): Promise<PublicStoreSettings> {
       fullStitchChargePaise: row.fullStitchChargePaise,
       shippingFree: row.shippingFree ?? true,
       shippingChargePaise: row.shippingChargePaise ?? 0,
+      homepageCms: row.homepageCms ?? null,
     };
   } catch {
     return defaults;
@@ -78,4 +80,10 @@ export async function getPricingSettings(): Promise<PricingSettings> {
     shippingFree: s.shippingFree,
     shippingChargePaise: s.shippingChargePaise,
   };
+}
+
+export async function getHomepageCmsSettings() {
+  const s = await getPublicStoreSettings();
+  const { normalizeHomepageCms } = await import("@/lib/homepage-cms");
+  return normalizeHomepageCms(s.homepageCms);
 }

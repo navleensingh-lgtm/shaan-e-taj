@@ -9,9 +9,26 @@ import { ViewportVideo } from "./ViewportVideo";
 interface EditorialHeroProps {
   videoUrl?: string;
   fallbackImageUrl?: string;
+  eyebrow?: string;
+  heading?: string;
+  subheading?: string;
+  primaryCtaText?: string;
+  primaryCtaHref?: string;
+  secondaryCtaText?: string;
+  secondaryCtaHref?: string;
 }
 
-export function EditorialHero({ videoUrl, fallbackImageUrl }: EditorialHeroProps) {
+export function EditorialHero({
+  videoUrl,
+  fallbackImageUrl,
+  eyebrow = `${siteConfig.legalName} · Jalandhar`,
+  heading,
+  subheading = siteConfig.description,
+  primaryCtaText = "Explore Collection",
+  primaryCtaHref = "/new-arrivals",
+  secondaryCtaText = "Custom Stitching",
+  secondaryCtaHref = "/custom-stitching",
+}: EditorialHeroProps) {
   const ytParsed = videoUrl ? parseYouTube(videoUrl) : null;
   const isYouTube = Boolean(ytParsed?.videoId);
 
@@ -81,39 +98,45 @@ export function EditorialHero({ videoUrl, fallbackImageUrl }: EditorialHeroProps
         <div className="mx-auto mb-4 sm:mb-6 flex items-center justify-center gap-2.5 sm:gap-3 animate-editorial-reveal">
           <span className="h-px w-8 sm:w-10 bg-gold" />
           <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.25em] sm:tracking-[0.3em] text-gold font-medium">
-            {siteConfig.legalName} · Jalandhar
+            {eyebrow}
           </span>
           <span className="h-px w-8 sm:w-10 bg-gold" />
         </div>
 
         {/* Editorial Heading */}
         <h1 className="serif animate-editorial-reveal animation-delay-100 text-3xl sm:text-6xl md:text-7xl font-light leading-[1.15] text-ivory tracking-tight">
-          Couture Defined by
-          <br />
-          <span className="italic font-serif text-gold-light">Artisanal Royalty</span>
+          {heading ? (
+            heading
+          ) : (
+            <>
+              Couture Defined by
+              <br />
+              <span className="italic font-serif text-gold-light">Artisanal Royalty</span>
+            </>
+          )}
         </h1>
 
         {/* Subtitle */}
         <p className="mx-auto mt-4 sm:mt-6 max-w-xl animate-editorial-reveal animation-delay-200 text-xs sm:text-sm leading-relaxed text-ivory/80 font-light">
-          {siteConfig.description}
+          {subheading}
         </p>
 
         {/* Tactile CTAs with localized contrast protection over background video */}
         <div className="relative mt-8 sm:mt-10 mx-auto max-w-lg p-2 sm:p-3 rounded-sm bg-radial from-espresso/60 via-espresso/25 to-transparent backdrop-blur-[2px] animate-editorial-reveal animation-delay-300">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full px-2 sm:px-0">
             <Link
-              href="/new-arrivals"
+              href={primaryCtaHref}
               className="btn-luxury-primary group w-full sm:w-auto rounded-xs px-8 sm:px-9 py-3.5 sm:py-4 text-center text-[10px] sm:text-[11px] uppercase tracking-[0.22em] font-medium shadow-md"
             >
-              <span>Explore Collection</span>
+              <span>{primaryCtaText}</span>
               <span className="arrow-shift ml-2 text-gold">→</span>
             </Link>
 
             <Link
-              href="/custom-stitching"
+              href={secondaryCtaHref}
               className="btn-luxury-hero-secondary w-full sm:w-auto rounded-xs px-8 sm:px-9 py-3.5 sm:py-4 text-center text-[10px] sm:text-[11px] uppercase tracking-[0.22em] font-medium"
             >
-              Custom Stitching
+              {secondaryCtaText}
             </Link>
           </div>
         </div>

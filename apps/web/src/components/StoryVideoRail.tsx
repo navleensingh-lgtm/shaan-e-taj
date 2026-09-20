@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { StoryVideoModal, type StoryItem } from "./StoryVideoModal";
+import { useCurrency } from "@/context/CurrencyContext";
 
 interface StoryVideoRailProps {
   title?: string;
@@ -17,6 +18,7 @@ export function StoryVideoRail({
 }: StoryVideoRailProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { formatPrice } = useCurrency();
 
   if (!items.length) return null;
 
@@ -119,7 +121,7 @@ export function StoryVideoRail({
                 {item.productName}
               </h3>
               <p className="mt-0.5 text-[11px] font-semibold text-rose-light">
-                ₹{(item.priceInPaise / 100).toLocaleString("en-IN")}
+                {formatPrice(item.priceInPaise)}
               </p>
             </div>
           </div>

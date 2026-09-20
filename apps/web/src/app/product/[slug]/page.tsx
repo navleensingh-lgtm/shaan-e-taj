@@ -7,6 +7,7 @@ import { ProductAccordion, type AccordionSectionItem } from "@/components/Produc
 import { ProductGrid } from "@/components/ProductGrid";
 import { WishlistButton } from "@/components/WishlistButton";
 import { ProductShareButton } from "@/components/ProductShareButton";
+import { ProductDetailPrice } from "@/components/ProductDetailPrice";
 import { getRelatedProducts } from "@/lib/products-server";
 
 function apiBase(): string {
@@ -162,19 +163,10 @@ export default async function ProductPage({
           </div>
 
           {/* Pricing */}
-          <div className="mt-3 sm:mt-4 flex flex-wrap items-baseline gap-2 sm:gap-3 border-b border-brand-border/60 pb-3 sm:pb-4">
-            <span className="text-2xl sm:text-3xl font-medium text-rose-dark">
-              ₹{price.toLocaleString("en-IN")}
-            </span>
-            {onSale && (
-              <span className="text-sm sm:text-base text-brand-subtle line-through">
-                ₹{mrp!.toLocaleString("en-IN")}
-              </span>
-            )}
-            <span className="w-full sm:w-auto text-[10px] sm:text-[11px] text-brand-muted uppercase tracking-wider">
-              Taxes included · Free domestic shipping
-            </span>
-          </div>
+          <ProductDetailPrice
+            priceInPaise={product.priceInPaise}
+            compareAtPaise={product.compareAtPaise}
+          />
 
           {/* Quick Specifications Pills */}
           <div className="mt-4 grid grid-cols-2 gap-2 text-xs">

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { videoEmbed } from "@/lib/product-media";
 import { orderWhatsAppUrl } from "@/lib/whatsapp";
+import { useCurrency } from "@/context/CurrencyContext";
 
 export type StoryItem = {
   id: string;
@@ -35,6 +36,7 @@ export function StoryVideoModal({
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
@@ -228,7 +230,7 @@ export function StoryVideoModal({
                   {currentItem.productName}
                 </h4>
                 <p className="text-xs font-semibold text-rose-light mt-0.5">
-                  ₹{priceRupees.toLocaleString("en-IN")}
+                  {formatPrice(currentItem.priceInPaise)}
                 </p>
               </div>
             </div>

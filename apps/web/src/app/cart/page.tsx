@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useOrderPricing } from "@/hooks/useOrderPricing";
 import { useStoreSettings } from "@/context/StoreSettingsContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { OrderPricingSummary } from "@/components/OrderPricingSummary";
 import { StitchingSelector } from "@/components/StitchingSelector";
 
@@ -12,6 +13,7 @@ export default function CartPage() {
   const { items, updateQty, removeItem, stitchingType, setStitchingType, count } = useCart();
   const pricing = useOrderPricing();
   const settings = useStoreSettings();
+  const { formatPrice } = useCurrency();
 
   return (
     <section className="mx-auto max-w-3xl px-3.5 py-6 sm:px-6 sm:py-16">
@@ -39,7 +41,7 @@ export default function CartPage() {
                       {item.name}
                     </Link>
                     <p className="mt-1 text-sm sm:text-base font-semibold text-rose-dark">
-                      ₹{(item.priceInPaise / 100).toLocaleString("en-IN")}
+                      {formatPrice(item.priceInPaise)}
                     </p>
                   </div>
 

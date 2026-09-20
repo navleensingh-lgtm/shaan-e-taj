@@ -291,6 +291,9 @@ model Order {
   trackingUrl     String?
   shippedAt       DateTime?
   estimatedDeliveryAt DateTime?
+  cancellationReason String?
+  cancelledAt     DateTime?
+  cancelledBy     String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
@@ -348,5 +351,8 @@ model SiteSettings {
   instagramUrl          String  @default("https://www.instagram.com/shaan_e_taj/")
   heroVideoUrl          String?
   masterSizeGuide       Json?
+  homepageCms           Json?
+  socialConfig          Json?
+  supportedCurrencies   String[] @default(["INR", "USD", "CAD", "GBP", "EUR", "AUD"])
 }
 

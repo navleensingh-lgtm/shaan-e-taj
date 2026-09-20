@@ -8,9 +8,11 @@ import { AdminOrders } from "@/components/AdminOrders";
 import { AdminProducts } from "@/components/AdminProducts";
 import { AdminCategories } from "@/components/AdminCategories";
 import { AdminStoreSettings } from "@/components/AdminStoreSettings";
+import { AdminHomepageCms } from "@/components/AdminHomepageCms";
+import { AdminSocialSettings } from "@/components/AdminSocialSettings";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 
-type Tab = "products" | "categories" | "store" | "orders" | "overview";
+type Tab = "cms" | "products" | "categories" | "orders" | "social" | "store" | "overview";
 
 type Dashboard = {
   today: {
@@ -31,7 +33,7 @@ type Dashboard = {
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
-  const [tab, setTab] = useState<Tab>("products");
+  const [tab, setTab] = useState<Tab>("cms");
   const [data, setData] = useState<Dashboard | null>(null);
 
   useEffect(() => {
@@ -55,10 +57,12 @@ export default function AdminPage() {
 
   const t = data?.today;
   const tabs: { id: Tab; label: string }[] = [
+    { id: "cms", label: "Homepage CMS" },
     { id: "products", label: "Products" },
     { id: "categories", label: "Categories" },
-    { id: "store", label: "Store & WhatsApp" },
     { id: "orders", label: "Orders" },
+    { id: "social", label: "Social & Meta" },
+    { id: "store", label: "Store & Settings" },
     { id: "overview", label: "Overview" },
   ];
 
@@ -66,9 +70,9 @@ export default function AdminPage() {
     <section className="mx-auto max-w-6xl px-5 py-12 lg:px-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="serif text-4xl">Admin</h1>
+          <h1 className="serif text-4xl">Admin Portal</h1>
           <p className="mt-2 text-sm text-brand-muted">
-            Manage collections, prices, stock, address, WhatsApp & orders.
+            Manage homepage content, marketing media, collections, prices, WhatsApp & orders.
           </p>
           <p className="mt-1 text-xs text-brand-subtle">{session.user?.email}</p>
         </div>
@@ -81,8 +85,8 @@ export default function AdminPage() {
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`rounded-sm px-4 py-2 text-[11px] uppercase tracking-wider ${
-              tab === id ? "bg-rose text-white" : "border border-brand-border text-brand-muted"
+            className={`rounded-sm px-4 py-2 text-[11px] uppercase tracking-wider font-medium cursor-pointer transition active:scale-95 ${
+              tab === id ? "bg-rose text-white" : "border border-brand-border text-brand-muted hover:border-gold hover:text-espresso"
             }`}
           >
             {label}
@@ -90,17 +94,29 @@ export default function AdminPage() {
         ))}
       </nav>
 
+      {tab === "cms" && (
+        <div className="mt-8">
+          <AdminHomepageCms />
+        </div>
+      )}
+
       {tab === "products" && <AdminProducts />}
 
       {tab === "categories" && <AdminCategories />}
+
+      {tab === "orders" && <AdminOrders />}
+
+      {tab === "social" && (
+        <div className="mt-8">
+          <AdminSocialSettings />
+        </div>
+      )}
 
       {tab === "store" && (
         <div className="mt-8 border border-brand-border bg-white p-6">
           <AdminStoreSettings />
         </div>
       )}
-
-      {tab === "orders" && <AdminOrders />}
 
       {tab === "overview" && (
         <>

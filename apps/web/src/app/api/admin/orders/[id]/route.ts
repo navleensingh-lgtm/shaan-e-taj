@@ -5,7 +5,8 @@ import { requireAdminSession } from "@/lib/admin-auth";
 type Params = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: Request, { params }: Params) {
-  if (!(await requireAdminSession())) {
+  const adminSession = await requireAdminSession();
+  if (!adminSession) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -17,12 +18,18 @@ export async function PATCH(req: Request, { params }: Params) {
   }
 
   const data: Prisma.OrderUpdateInput = {};
-  const { status, trackingNumber, trackingCarrier, trackingUrl, estimatedDeliveryAt } = body;
+  const { status, trackingNumber, trackingCarrier, trackingUrl, estimatedDeliveryAt, cancellationReason } = body;
 
   if (status) data.status = status as OrderStatus;
   if (trackingNumber !== undefined) data.trackingNumber = trackingNumber || null;
   if (trackingCarrier !== undefined) data.trackingCarrier = trackingCarrier || null;
   if (trackingUrl !== undefined) data.trackingUrl = trackingUrl || null;
+
+  if (status === OrderStatus.CANCELLED) {
+    data.cancelledAt = new Date();
+    data.cancellationReason = cancellationReason || "Cancelled by boutique administrator";
+    data.cancelledBy = adminSession.user?.email || "Admin";
+  }
 
   if (status === OrderStatus.SHIPPED) {
     data.shippedAt = existing.shippedAt ?? new Date();

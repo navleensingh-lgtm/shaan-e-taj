@@ -11,6 +11,7 @@ import { trackEvent } from "@/lib/api";
 import { videoEmbed } from "@/lib/product-media";
 import { useCart } from "@/context/CartContext";
 import { useStoreSettings } from "@/context/StoreSettingsContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { WishlistButton } from "./WishlistButton";
 import { ProductShareButton } from "./ProductShareButton";
 
@@ -18,6 +19,7 @@ type Props = { product: Product };
 
 export function ProductCard({ product }: Props) {
   const { addItem } = useCart();
+  const { formatPrice } = useCurrency();
   const router = useRouter();
   const settings = useStoreSettings();
 
@@ -160,10 +162,10 @@ export function ProductCard({ product }: Props) {
           </h3>
 
           <p className="mt-1 flex flex-wrap items-baseline gap-1.5 text-xs sm:text-sm font-medium text-rose-dark">
-            <span>₹{price.toLocaleString("en-IN")}</span>
+            <span>{formatPrice(product.priceInPaise)}</span>
             {onSale && (
               <span className="text-[10px] sm:text-xs font-normal text-brand-subtle line-through">
-                ₹{mrp!.toLocaleString("en-IN")}
+                {formatPrice(product.compareAtPaise!)}
               </span>
             )}
           </p>

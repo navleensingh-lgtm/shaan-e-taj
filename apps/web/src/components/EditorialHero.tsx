@@ -15,20 +15,19 @@ export function EditorialHero({ videoUrl, fallbackImageUrl }: EditorialHeroProps
   const ytParsed = videoUrl ? parseYouTube(videoUrl) : null;
   const isYouTube = Boolean(ytParsed?.videoId);
 
-  // Defer heavy YouTube iframe until after hydration and initial paint
-  const [mountYouTube, setMountYouTube] = useState(false);
+  // Defer background video mounting until after client hydration and initial paint
+  const [mountVideo, setMountVideo] = useState(false);
 
   useEffect(() => {
-    if (!isYouTube) return;
-    // Delay iframe load so hero typography, CTAs and poster appear instantaneously
+    // Delay background media load slightly (300ms) so hero typography, CTAs and poster appear instantaneously
     const timer = setTimeout(() => {
-      setMountYouTube(true);
-    }, 1200);
+      setMountVideo(true);
+    }, 300);
     return () => clearTimeout(timer);
-  }, [isYouTube]);
+  }, []);
 
   const ytBgSrc =
-    isYouTube && mountYouTube && ytParsed?.videoId
+    isYouTube && mountVideo && ytParsed?.videoId
       ? `https://www.youtube-nocookie.com/embed/${ytParsed.videoId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${ytParsed.videoId}&playsinline=1&modestbranding=1&disablekb=1&fs=0`
       : null;
 
@@ -58,7 +57,7 @@ export function EditorialHero({ videoUrl, fallbackImageUrl }: EditorialHeroProps
               />
             </div>
           ) : null
-        ) : videoUrl ? (
+        ) : videoUrl && mountVideo ? (
           <div className="absolute inset-0">
             <ViewportVideo
               src={videoUrl}

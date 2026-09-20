@@ -56,6 +56,18 @@ export async function PATCH(req: Request, { params }: Params) {
   if (body.isNewArrival != null) data.isNewArrival = Boolean(body.isNewArrival);
   if (body.inStock != null) data.inStock = Boolean(body.inStock);
   if (body.stitchingAvailable != null) data.stitchingAvailable = Boolean(body.stitchingAvailable);
+  if (body.sku !== undefined) data.sku = body.sku || null;
+  if (body.productType !== undefined) data.productType = body.productType || null;
+  if (body.fit !== undefined) data.fit = body.fit || null;
+  if (body.availability !== undefined) data.availability = body.availability || "READY_TO_SHIP";
+  if (body.prepTimeline !== undefined) data.prepTimeline = body.prepTimeline || null;
+  if (body.components !== undefined) data.components = Array.isArray(body.components) ? body.components : [];
+  if (body.fabricDetails !== undefined) data.fabricDetails = body.fabricDetails || null;
+  if (body.careInstructions !== undefined) data.careInstructions = body.careInstructions || null;
+  if (body.deliveryInfo !== undefined) data.deliveryInfo = body.deliveryInfo || null;
+  if (body.customStitchingInfo !== undefined) data.customStitchingInfo = body.customStitchingInfo || null;
+  if (body.returnsInfo !== undefined) data.returnsInfo = body.returnsInfo || null;
+  if (body.customMeasurements !== undefined) data.customMeasurements = body.customMeasurements;
   if (body.useMasterSizeGuide !== undefined) data.useMasterSizeGuide = Boolean(body.useMasterSizeGuide);
   if (body.sizeGuide !== undefined) data.sizeGuide = body.sizeGuide;
   if (body.status != null) {

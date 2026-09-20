@@ -11,6 +11,8 @@ const CATALOG_LIMIT = "200";
 type Filters = {
   mainCategory: string;
   subCategory: string;
+  productType: string;
+  availability: string;
   minPrice: string;
   maxPrice: string;
   color: string;
@@ -33,6 +35,8 @@ export function CatalogClient({
   const [filters, setFilters] = useState<Filters>({
     mainCategory: "",
     subCategory: "",
+    productType: "",
+    availability: "",
     minPrice: "",
     maxPrice: "",
     color: "",
@@ -45,6 +49,8 @@ export function CatalogClient({
     if (query) params.set("q", query);
     if (f.mainCategory) params.set("mainCategory", f.mainCategory);
     if (f.subCategory) params.set("subCategory", f.subCategory);
+    if (f.productType) params.set("productType", f.productType);
+    if (f.availability) params.set("availability", f.availability);
     if (f.minPrice) params.set("minPrice", f.minPrice);
     if (f.maxPrice) params.set("maxPrice", f.maxPrice);
     if (f.color) params.set("color", f.color);
@@ -129,6 +135,22 @@ export function CatalogClient({
             </option>
           ))}
         </select>
+        <select
+          value={filters.availability}
+          onChange={(e) => onFilterChange("availability", e.target.value)}
+          className="border border-brand-border bg-white px-3 py-2 text-sm"
+        >
+          <option value="">All availability</option>
+          <option value="READY_TO_SHIP">Ready to Ship</option>
+          <option value="MADE_TO_ORDER">Made to Order</option>
+          <option value="CUSTOM">Custom Tailored</option>
+        </select>
+        <input
+          placeholder="Product Type (e.g. Kurti, Farshi)"
+          value={filters.productType}
+          onChange={(e) => onFilterChange("productType", e.target.value)}
+          className="border border-brand-border bg-white px-3 py-2 text-sm"
+        />
         <input
           placeholder="Min ₹"
           value={filters.minPrice}

@@ -21,6 +21,7 @@ export type OrderProductInput = {
   style?: string | null;
   color?: string | null;
   fabric?: string | null;
+  size?: string | null;
   quantity?: number;
   sku?: string | null;
   productUrl?: string;
@@ -37,30 +38,19 @@ export function orderMessage(product: OrderProductInput): string {
     product.stitchingType === "FULLY_STITCHED" ? "Fully Stitched" : "Unstitched";
 
   const lines = [
-    "Hello, I would like to order this product:",
+    "Hello Shaan-e-Taj, I would like to order this piece:",
     "",
     `Product: ${product.name}`,
-    `Product Price: ₹${product.price.toLocaleString("en-IN")}`,
-    product.style ? `Style: ${product.style}` : "",
-    product.color ? `Color: ${product.color}` : "",
+    sku ? `SKU: ${sku}` : "",
+    `Price: ₹${product.price.toLocaleString("en-IN")}`,
+    product.size ? `Size: ${product.size}` : "",
+    product.color ? `Colour: ${product.color}` : "",
     product.fabric ? `Fabric: ${product.fabric}` : "",
+    product.style ? `Style: ${product.style}` : "",
     product.category ? `Category: ${product.category}` : "",
     product.quantity && product.quantity > 1 ? `Quantity: ${product.quantity}` : "",
-    sku ? `SKU: ${sku}` : "",
     `Stitching: ${stitchingLabel}`,
-    product.stitchingCharge != null && product.stitchingCharge > 0
-      ? product.quantity && product.quantity > 1 && product.stitchingType === "FULLY_STITCHED"
-        ? `Stitching Charge: ₹${(product.stitchingCharge / product.quantity).toLocaleString("en-IN")}/suit × ${product.quantity} = ₹${product.stitchingCharge.toLocaleString("en-IN")}`
-        : `Stitching Charge: ₹${product.stitchingCharge.toLocaleString("en-IN")}`
-      : product.stitchingType === "FULLY_STITCHED"
-        ? "Stitching Charge: ₹0"
-        : "",
-    product.shippingCharge != null
-      ? product.shippingCharge > 0
-        ? `Shipping: ₹${product.shippingCharge.toLocaleString("en-IN")}`
-        : "Shipping: Free"
-      : "",
-    product.totalPrice != null ? `Total: ₹${product.totalPrice.toLocaleString("en-IN")}` : "",
+    product.totalPrice != null ? `Estimated Total: ₹${product.totalPrice.toLocaleString("en-IN")}` : "",
     "",
     "Product Link:",
     link,
@@ -76,4 +66,44 @@ export function orderWhatsAppUrl(product: OrderProductInput): string {
       productUrl: productPageUrl(product.slug),
     })
   );
+}
+
+export type WhatsAppEnquiryContext = "GENERAL" | "CUSTOM_STITCHING" | "SIZE_HELP" | "URGENT";
+
+export function contextualWhatsAppUrl(
+  product: {
+    name: string;
+    slug: string;
+    sku?: string | null;
+    priceInPaise?: number;
+    color?: string | null;
+    size?: string | null;
+  },
+  context: WhatsAppEnquiryContext
+): string {
+  const link = productPageUrl(product.slug);
+  const sku = product.sku?.trim() || product.slug;
+
+  let intro = "Hello Shaan-e-Taj, I would like assistance with:";
+  if (context === "CUSTOM_STITCHING") {
+    intro = "Hello Shaan-e-Taj, I would like to enquire about custom stitching for:";
+  } else if (context === "SIZE_HELP") {
+    intro = "Hello Shaan-e-Taj, I need assistance finding the perfect size for:";
+  } else if (context === "URGENT") {
+    intro = "Hello Shaan-e-Taj, I need this piece urgently and would like to check expedited delivery for:";
+  }
+
+  const lines = [
+    intro,
+    "",
+    `Product: ${product.name}`,
+    `SKU: ${sku}`,
+    product.size ? `Selected Size: ${product.size}` : "",
+    product.color ? `Colour: ${product.color}` : "",
+    "",
+    "Product Link:",
+    link,
+  ].filter(Boolean);
+
+  return whatsAppUrl(lines.join("\n"));
 }

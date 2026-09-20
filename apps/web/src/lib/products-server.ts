@@ -12,6 +12,8 @@ export async function listProducts(query: Record<string, string | undefined>) {
     color,
     fabric,
     occasion,
+    productType,
+    availability,
     inStock,
     isNewArrival,
     limit = "24",
@@ -24,6 +26,8 @@ export async function listProducts(query: Record<string, string | undefined>) {
 
   if (mainCategory) where.mainCategory = mainCategory;
   if (subCategory) where.subCategory = subCategory;
+  if (productType) where.productType = { contains: productType, mode: "insensitive" };
+  if (availability) where.availability = availability;
   if (color) where.color = { contains: color, mode: "insensitive" };
   if (fabric) where.fabric = { contains: fabric, mode: "insensitive" };
   if (occasion) where.occasion = { contains: occasion, mode: "insensitive" };
@@ -34,10 +38,12 @@ export async function listProducts(query: Record<string, string | undefined>) {
   if (search) {
     where.OR = [
       { name: { contains: search, mode: "insensitive" } },
+      { sku: { contains: search, mode: "insensitive" } },
       { description: { contains: search, mode: "insensitive" } },
       { color: { contains: search, mode: "insensitive" } },
       { fabric: { contains: search, mode: "insensitive" } },
       { occasion: { contains: search, mode: "insensitive" } },
+      { productType: { contains: search, mode: "insensitive" } },
       { badge: { contains: search, mode: "insensitive" } },
     ];
   }
@@ -97,4 +103,50 @@ export async function getHomeNewArrivals(limit = 8) {
 
 export async function getCatalogProducts(limit = 200) {
   return listProducts({ limit: String(limit) });
+}
+
+export async function getRelatedProducts(product: {
+  id: string;
+  mainCategory: string;
+  subCategory?: string;
+  occasion?: string | null;
+}, limit = 4) {
+  try {
+    const related = await prisma.product.findMany({
+      where: {
+        id: { not: product.id },
+        status: ProductStatus.PUBLISHED,
+        OR: [
+          { mainCategory: product.mainCategory },
+          { subCategory: product.subCategory },
+          product.occasion ? { occasion: product.occasion } : undefined,
+        ].filter(Boolean) as Prisma.ProductWhereInput[],
+      },
+      include: {
+        images: { orderBy: { sortOrder: "asc" } },
+      },
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (related.length < limit) {
+      const more = await prisma.product.findMany({
+        where: {
+          id: { notIn: [product.id, ...related.map((r) => r.id)] },
+          status: ProductStatus.PUBLISHED,
+        },
+        include: {
+          images: { orderBy: { sortOrder: "asc" } },
+        },
+        take: limit - related.length,
+        orderBy: { createdAt: "desc" },
+      });
+      return [...related, ...more];
+    }
+
+    return related;
+  } catch (err) {
+    console.warn("Could not fetch related products:", err);
+    return [];
+  }
 }

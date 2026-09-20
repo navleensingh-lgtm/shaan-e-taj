@@ -35,6 +35,18 @@ type ProductRow = {
   status: string;
   inStock: boolean;
   isNewArrival: boolean;
+  sku?: string | null;
+  productType?: string | null;
+  fit?: string | null;
+  availability?: string | null;
+  prepTimeline?: string | null;
+  components?: string[];
+  fabricDetails?: string | null;
+  careInstructions?: string | null;
+  deliveryInfo?: string | null;
+  customStitchingInfo?: string | null;
+  returnsInfo?: string | null;
+  customMeasurements?: { fields?: string[] } | null;
   useMasterSizeGuide?: boolean;
   sizeGuide?: SizeGuideData | null;
   images: { url: string; isPrimary: boolean; sortOrder?: number }[];
@@ -49,6 +61,17 @@ type MediaItem = { id: string; url: string; kind: string };
 const emptyForm = {
   name: "",
   slug: "",
+  sku: "",
+  productType: "Suit Set",
+  fit: "Straight Fit",
+  availability: "READY_TO_SHIP",
+  prepTimeline: "Ready to ship within 24-48 hours",
+  componentsStr: "1 Kurti\n1 Bottom / Pants\n1 Dupatta",
+  fabricDetails: "",
+  careInstructions: "Dry clean only. Store in a muslin cloth to maintain handcrafted embroidery.",
+  deliveryInfo: "Complimentary domestic shipping across India. Standard transit takes 3-5 business days. For international shipping, rates and transit are calculated at checkout.",
+  customStitchingInfo: "Custom tailoring available on unstitched and semi-stitched suits. Contact our boutique style assistant on WhatsApp with your measurements.",
+  returnsInfo: "Due to bespoke boutique craftsmanship, each piece is quality inspected before dispatch. Alteration assistance is gladly offered.",
   description: "",
   mainCategory: "PARTY_WEAR",
   subCategory: "PAKISTANI",
@@ -256,6 +279,17 @@ export function AdminProducts() {
     setForm({
       name: p.name,
       slug: p.slug,
+      sku: p.sku ?? "",
+      productType: p.productType ?? "Suit Set",
+      fit: p.fit ?? "Straight Fit",
+      availability: p.availability ?? "READY_TO_SHIP",
+      prepTimeline: p.prepTimeline ?? "",
+      componentsStr: Array.isArray(p.components) && p.components.length ? p.components.join("\n") : "",
+      fabricDetails: p.fabricDetails ?? "",
+      careInstructions: p.careInstructions ?? "",
+      deliveryInfo: p.deliveryInfo ?? "",
+      customStitchingInfo: p.customStitchingInfo ?? "",
+      returnsInfo: p.returnsInfo ?? "",
       description: p.description,
       mainCategory: p.mainCategory,
       subCategory: p.subCategory,
@@ -349,6 +383,19 @@ export function AdminProducts() {
       badge: form.badge || null,
       fabric: form.fabric || null,
       color: form.color || null,
+      sku: form.sku.trim() || null,
+      productType: form.productType.trim() || null,
+      fit: form.fit || "Straight Fit",
+      availability: form.availability || "READY_TO_SHIP",
+      prepTimeline: form.prepTimeline.trim() || null,
+      components: form.componentsStr.trim()
+        ? form.componentsStr.split("\n").map((c) => c.trim()).filter(Boolean)
+        : [],
+      fabricDetails: form.fabricDetails.trim() || null,
+      careInstructions: form.careInstructions.trim() || null,
+      deliveryInfo: form.deliveryInfo.trim() || null,
+      customStitchingInfo: form.customStitchingInfo.trim() || null,
+      returnsInfo: form.returnsInfo.trim() || null,
       images: images.map((img, index) => ({
         url: img.url,
         isPrimary: img.isPrimary,
@@ -565,6 +612,64 @@ export function AdminProducts() {
                 className="mt-1 w-full border px-3 py-2"
                 value={form.color}
                 onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+              />
+            </label>
+
+            {/* PRODUCT IDENTITY & AVAILABILITY */}
+            <label className="text-sm">
+              SKU (Stock Keeping Unit)
+              <input
+                className="mt-1 w-full border px-3 py-2 font-mono uppercase"
+                placeholder="e.g. SET-LUM-01"
+                value={form.sku}
+                onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value.toUpperCase() }))}
+              />
+            </label>
+            <label className="text-sm">
+              Product Type
+              <input
+                className="mt-1 w-full border px-3 py-2"
+                placeholder="e.g. Kurti, Farshi Set, Sharara, Lehenga"
+                value={form.productType}
+                onChange={(e) => setForm((f) => ({ ...f, productType: e.target.value }))}
+              />
+            </label>
+            <label className="text-sm">
+              Silhouette / Fit
+              <select
+                className="mt-1 w-full border px-3 py-2"
+                value={form.fit}
+                onChange={(e) => setForm((f) => ({ ...f, fit: e.target.value }))}
+              >
+                <option value="Straight Fit">Straight Fit</option>
+                <option value="Fitted">Fitted</option>
+                <option value="A-Line">A-Line</option>
+                <option value="Flared">Flared</option>
+                <option value="Relaxed">Relaxed</option>
+                <option value="Oversized">Oversized</option>
+              </select>
+            </label>
+            <label className="text-sm">
+              Availability
+              <select
+                className="mt-1 w-full border px-3 py-2"
+                value={form.availability}
+                onChange={(e) => setForm((f) => ({ ...f, availability: e.target.value }))}
+              >
+                <option value="READY_TO_SHIP">Ready to Ship (Dispatches in 24–48h)</option>
+                <option value="MADE_TO_ORDER">Made to Order (Bespoke tailoring timeline)</option>
+                <option value="CUSTOM">Custom Tailored (Crafted to measurements)</option>
+                <option value="LOW_STOCK">Low Stock (Limited inventory remaining)</option>
+                <option value="OUT_OF_STOCK">Out of Stock</option>
+              </select>
+            </label>
+            <label className="text-sm md:col-span-2">
+              Preparation / Dispatch Timeline
+              <input
+                className="mt-1 w-full border px-3 py-2"
+                placeholder="e.g. Ready to ship in 24–48 hours OR Made to order: 15–20 days"
+                value={form.prepTimeline}
+                onChange={(e) => setForm((f) => ({ ...f, prepTimeline: e.target.value }))}
               />
             </label>
 
@@ -1193,12 +1298,79 @@ export function AdminProducts() {
             </div>
 
             <label className="text-sm md:col-span-2">
-              Description
+              Description (Silhouette, Craftsmanship & Detailing)
               <textarea
                 className="mt-1 w-full border px-3 py-2"
                 rows={3}
+                placeholder="Editorial description of the silhouette, artisan handwork, embroidery, and styling..."
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              />
+            </label>
+
+            <label className="text-sm md:col-span-2">
+              What&apos;s Included / Components (One per line)
+              <textarea
+                className="mt-1 w-full border px-3 py-2"
+                rows={3}
+                placeholder={"1 Kurti\n1 Bottom / Pants\n1 Dupatta"}
+                value={form.componentsStr}
+                onChange={(e) => setForm((f) => ({ ...f, componentsStr: e.target.value }))}
+              />
+            </label>
+
+            <label className="text-sm md:col-span-2">
+              Fabric & Details
+              <textarea
+                className="mt-1 w-full border px-3 py-2"
+                rows={2}
+                placeholder="e.g. Pure Chanderi Silk with Zari embroidery and organza dupatta border..."
+                value={form.fabricDetails}
+                onChange={(e) => setForm((f) => ({ ...f, fabricDetails: e.target.value }))}
+              />
+            </label>
+
+            <label className="text-sm">
+              Care Instructions
+              <textarea
+                className="mt-1 w-full border px-3 py-2"
+                rows={2}
+                placeholder="e.g. Dry clean only. Protect intricate zardozi work."
+                value={form.careInstructions}
+                onChange={(e) => setForm((f) => ({ ...f, careInstructions: e.target.value }))}
+              />
+            </label>
+
+            <label className="text-sm">
+              Delivery & Shipping Information
+              <textarea
+                className="mt-1 w-full border px-3 py-2"
+                rows={2}
+                placeholder="e.g. Domestic dispatch in 3-5 days. International shipping calculated at checkout."
+                value={form.deliveryInfo}
+                onChange={(e) => setForm((f) => ({ ...f, deliveryInfo: e.target.value }))}
+              />
+            </label>
+
+            <label className="text-sm">
+              Custom Stitching Information
+              <textarea
+                className="mt-1 w-full border px-3 py-2"
+                rows={2}
+                placeholder="e.g. Bespoke measurements tailored by master artisans in Jalandhar."
+                value={form.customStitchingInfo}
+                onChange={(e) => setForm((f) => ({ ...f, customStitchingInfo: e.target.value }))}
+              />
+            </label>
+
+            <label className="text-sm">
+              Returns & Exchanges Policy
+              <textarea
+                className="mt-1 w-full border px-3 py-2"
+                rows={2}
+                placeholder="e.g. Quality inspected prior to dispatch. Alteration support gladly provided."
+                value={form.returnsInfo}
+                onChange={(e) => setForm((f) => ({ ...f, returnsInfo: e.target.value }))}
               />
             </label>
             <label className="text-sm">

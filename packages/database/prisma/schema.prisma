@@ -117,6 +117,19 @@ model Product {
   unstitchedPricePaise   Int?
   semiStitchedPricePaise Int?
   fullyStitchedPricePaise Int?
+  sku                 String?
+  productType         String?
+  fit                 String?
+  availability        String?       @default("READY_TO_SHIP")
+  prepTimeline        String?
+  components          String[]      @default([])
+  fabricDetails       String?       @db.Text
+  careInstructions    String?       @db.Text
+  deliveryInfo        String?       @db.Text
+  customStitchingInfo String?       @db.Text
+  returnsInfo         String?       @db.Text
+  customMeasurements  Json?
+  faqs                Json?
   useMasterSizeGuide  Boolean   @default(true)
   sizeGuide           Json?
   status          ProductStatus @default(DRAFT)

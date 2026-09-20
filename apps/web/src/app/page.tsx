@@ -355,31 +355,41 @@ export default async function HomePage() {
                 {/* High Contrast CTAs with luxury gradient backdrop */}
                 <div className="mt-8 flex flex-wrap items-center gap-4">
                   <Link
-                    href={cms.bespokeCouture.primaryCtaHref || "/custom-stitching"}
-                    className="btn-luxury-gold inline-flex items-center rounded-xs px-6 py-3.5 text-[10px] uppercase tracking-[0.2em] font-semibold text-espresso shadow-lg"
+                    href={cms.bespokeCouture.primaryCtaHref || "/contact"}
+                    className="btn-luxury-gold inline-flex min-h-[44px] items-center justify-center rounded-xs px-6 py-3 text-[11px] uppercase tracking-[0.2em] font-semibold shadow-lg text-[#140d09]"
                   >
-                    <span>{cms.bespokeCouture.primaryCtaText}</span>
-                    <span className="arrow-shift ml-1.5 font-bold">→</span>
+                    <span>{cms.bespokeCouture.primaryCtaText || "Book Boutique Appointment"}</span>
                   </Link>
                   <Link
-                    href={cms.bespokeCouture.secondaryCtaHref || "/contact"}
-                    className="btn-luxury-outline text-white border-white/40 hover:border-gold hover:text-white inline-flex items-center rounded-xs px-6 py-3.5 text-[10px] uppercase tracking-[0.2em] font-medium"
+                    href={cms.bespokeCouture.secondaryCtaHref || "/custom-stitching"}
+                    className="btn-luxury-outline-light inline-flex min-h-[44px] items-center justify-center rounded-xs px-6 py-3 text-[11px] uppercase tracking-[0.2em] font-medium"
                   >
-                    <span>{cms.bespokeCouture.secondaryCtaText}</span>
+                    <span>{cms.bespokeCouture.secondaryCtaText || "Size & Measurement Guide →"}</span>
                   </Link>
                 </div>
               </div>
 
               <div className="lg:col-span-5 relative aspect-[4/5] overflow-hidden rounded-xs border border-white/20 shadow-2xl">
-                <Image
-                  src={cms.bespokeCouture.imageUrl}
-                  alt="Shaan-e-Taj Master Tailoring"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 40vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-espresso/80 via-transparent to-transparent" />
-                <div className="absolute bottom-4 inset-x-4 text-center">
+                {cms.bespokeCouture.videoUrl ? (
+                  <video
+                    src={cms.bespokeCouture.videoUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <Image
+                    src={cms.bespokeCouture.imageUrl}
+                    alt="Shaan-e-Taj Master Tailoring"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-espresso/80 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-4 inset-x-4 text-center pointer-events-none">
                   <p className="text-[10px] uppercase tracking-[0.25em] text-gold font-medium">
                     {cms.bespokeCouture.locationTag}
                   </p>

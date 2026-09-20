@@ -143,6 +143,72 @@ body {
   transform: translateY(0) scale(0.99);
 }
 
+/* Gold High-Contrast Luxury Button */
+.btn-luxury-gold {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #d4af37 0%, #c59b27 100%);
+  color: #201610;
+  border: 1px solid rgba(255, 235, 175, 0.6);
+  box-shadow: 0 4px 18px -2px rgba(197, 155, 39, 0.35);
+  cursor: pointer;
+  user-select: none;
+  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-luxury-gold:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dfbc45 0%, #d4a933 100%);
+  border-color: rgba(255, 255, 255, 0.9);
+  color: #140d09;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px -2px rgba(197, 155, 39, 0.5), 0 0 16px rgba(212, 175, 55, 0.3);
+}
+
+.btn-luxury-gold:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
+.btn-luxury-gold:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* Light Outline Luxury Button for Dark/Cinematic Backgrounds */
+.btn-luxury-outline-light {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  user-select: none;
+  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-luxury-outline-light:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--gold);
+  color: var(--gold-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.btn-luxury-outline-light:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
+.btn-luxury-outline-light:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 /* Dedicated Hero Secondary Button with high contrast over video background */
 .btn-luxury-hero-secondary {
   position: relative;

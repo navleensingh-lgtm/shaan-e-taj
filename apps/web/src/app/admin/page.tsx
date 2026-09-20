@@ -12,7 +12,9 @@ import { AdminHomepageCms } from "@/components/AdminHomepageCms";
 import { AdminSocialSettings } from "@/components/AdminSocialSettings";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 
-type Tab = "cms" | "products" | "categories" | "orders" | "social" | "store" | "overview";
+import { AdminAboutCms } from "@/components/AdminAboutCms";
+
+type Tab = "cms" | "about" | "products" | "categories" | "orders" | "social" | "store" | "overview";
 
 type Dashboard = {
   today: {
@@ -58,6 +60,7 @@ export default function AdminPage() {
   const t = data?.today;
   const tabs: { id: Tab; label: string }[] = [
     { id: "cms", label: "Homepage CMS" },
+    { id: "about", label: "About CMS" },
     { id: "products", label: "Products" },
     { id: "categories", label: "Categories" },
     { id: "orders", label: "Orders" },
@@ -97,6 +100,12 @@ export default function AdminPage() {
       {tab === "cms" && (
         <div className="mt-8">
           <AdminHomepageCms />
+        </div>
+      )}
+
+      {tab === "about" && (
+        <div className="mt-8">
+          <AdminAboutCms />
         </div>
       )}
 

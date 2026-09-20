@@ -734,7 +734,7 @@ export function AdminHomepageCms() {
 
             {/* CTAs */}
             <label className="block text-xs">
-              <span className="font-medium text-brand-text">Primary CTA Text (Size Guide)</span>
+              <span className="font-medium text-brand-text">Primary CTA Text (Appointment)</span>
               <input
                 type="text"
                 value={cms.bespokeCouture.primaryCtaText}
@@ -764,7 +764,7 @@ export function AdminHomepageCms() {
             </label>
 
             <label className="block text-xs">
-              <span className="font-medium text-brand-text">Secondary CTA Text (Appointment)</span>
+              <span className="font-medium text-brand-text">Secondary CTA Text (Size Guide)</span>
               <input
                 type="text"
                 value={cms.bespokeCouture.secondaryCtaText}
@@ -793,9 +793,24 @@ export function AdminHomepageCms() {
               />
             </label>
 
-            {/* Atelier Image */}
+            <label className="block text-xs sm:col-span-2">
+              <span className="font-medium text-brand-text">Location Tag / Footer Label</span>
+              <input
+                type="text"
+                value={cms.bespokeCouture.locationTag}
+                onChange={(e) =>
+                  setCms({
+                    ...cms,
+                    bespokeCouture: { ...cms.bespokeCouture, locationTag: e.target.value },
+                  })
+                }
+                className="mt-1 w-full rounded-xs border border-brand-border px-3 py-2 text-xs"
+              />
+            </label>
+
+            {/* Atelier Image & Mobile Media */}
             <div className="sm:col-span-2 border-t border-brand-border/60 pt-4">
-              <p className="text-xs font-semibold text-brand-text">Atelier Showcase Image</p>
+              <p className="text-xs font-semibold text-brand-text">Atelier Showcase Image (Desktop / Main)</p>
               <div className="mt-2 flex items-center gap-4">
                 {cms.bespokeCouture.imageUrl && (
                   <div className="relative h-24 w-20 overflow-hidden rounded-xs border border-brand-border">
@@ -836,6 +851,40 @@ export function AdminHomepageCms() {
                   />
                 </div>
               </div>
+            </div>
+
+            <div className="sm:col-span-2 border-t border-brand-border/60 pt-4 grid gap-4 sm:grid-cols-2">
+              <label className="block text-xs">
+                <span className="font-medium text-brand-text">Optional Mobile Image URL</span>
+                <input
+                  type="text"
+                  value={cms.bespokeCouture.mobileImageUrl || ""}
+                  onChange={(e) =>
+                    setCms({
+                      ...cms,
+                      bespokeCouture: { ...cms.bespokeCouture, mobileImageUrl: e.target.value || null },
+                    })
+                  }
+                  placeholder="https://... (fallback to main image if empty)"
+                  className="mt-1 w-full rounded-xs border border-brand-border px-3 py-2 text-xs"
+                />
+              </label>
+
+              <label className="block text-xs">
+                <span className="font-medium text-brand-text">Optional Video Loop URL (MP4)</span>
+                <input
+                  type="text"
+                  value={cms.bespokeCouture.videoUrl || ""}
+                  onChange={(e) =>
+                    setCms({
+                      ...cms,
+                      bespokeCouture: { ...cms.bespokeCouture, videoUrl: e.target.value || null },
+                    })
+                  }
+                  placeholder="https://...mp4"
+                  className="mt-1 w-full rounded-xs border border-brand-border px-3 py-2 text-xs"
+                />
+              </label>
             </div>
           </div>
         </div>

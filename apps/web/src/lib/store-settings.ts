@@ -87,3 +87,11 @@ export async function getHomepageCmsSettings() {
   const { normalizeHomepageCms } = await import("@/lib/homepage-cms");
   return normalizeHomepageCms(s.homepageCms);
 }
+
+export async function getAboutCmsSettings() {
+  const s = await getPublicStoreSettings();
+  const { normalizeAboutCms } = await import("@/lib/about-cms");
+  const rawHomepageCms = s.homepageCms as Record<string, any> | undefined;
+  return normalizeAboutCms(rawHomepageCms?.about);
+}
+

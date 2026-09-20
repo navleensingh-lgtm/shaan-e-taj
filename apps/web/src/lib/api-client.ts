@@ -15,7 +15,7 @@ function resolveUrl(path: string): string {
   return `${API_URL}${path}`;
 }
 
-export async function apiFetch(path: string, init?: RequestInit) {
+export async function apiFetch<T = any>(path: string, init?: RequestInit): Promise<T> {
   const session = await getSession();
   const headers = new Headers(init?.headers);
   headers.set("Content-Type", "application/json");
@@ -25,7 +25,7 @@ export async function apiFetch(path: string, init?: RequestInit) {
   const res = await fetch(resolveUrl(path), { ...init, headers, credentials: "same-origin" });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error ?? res.statusText);
-  return data;
+  return data as T;
 }
 
 /** Upload product media (image or video) for admin. Returns public URL and storage. */

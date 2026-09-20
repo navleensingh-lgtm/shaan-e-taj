@@ -13,6 +13,12 @@ import {
   validateYouTubeUrl,
   videoEmbed,
 } from "@/lib/product-media";
+import {
+  MASTER_SIZE_CHART,
+  type SizeChartRow,
+  type SizeGuideData,
+  type MeasurementType,
+} from "@/lib/size-guide";
 
 type ProductRow = {
   id: string;
@@ -29,6 +35,8 @@ type ProductRow = {
   status: string;
   inStock: boolean;
   isNewArrival: boolean;
+  useMasterSizeGuide?: boolean;
+  sizeGuide?: SizeGuideData | null;
   images: { url: string; isPrimary: boolean; sortOrder?: number }[];
   media: { url: string; kind: string }[];
 };
@@ -76,6 +84,13 @@ export function AdminProducts() {
   const [youtubeInput, setYoutubeInput] = useState("");
   const [instagramInput, setInstagramInput] = useState("");
   const [mediaUrlInput, setMediaUrlInput] = useState("");
+  // Size Guide States
+  const [useMasterSizeGuide, setUseMasterSizeGuide] = useState(true);
+  const [sizeGuideTitle, setSizeGuideTitle] = useState("SIZE GUIDE");
+  const [sizeGuideSubtitle, setSizeGuideSubtitle] = useState("FIND YOUR PERFECT FIT");
+  const [measurementType, setMeasurementType] = useState<MeasurementType>("BODY");
+  const [customRows, setCustomRows] = useState<SizeChartRow[]>(MASTER_SIZE_CHART);
+  const [customNotes, setCustomNotes] = useState<string>("");
 
   function loadCategories() {
     fetch("/api/categories")
@@ -271,6 +286,23 @@ export function AdminProducts() {
         kind: m.kind || inferMediaKind(m.url),
       }))
     );
+    // Populate Size Guide state
+    const useMaster = p.useMasterSizeGuide !== false;
+    setUseMasterSizeGuide(useMaster);
+    if (p.sizeGuide && typeof p.sizeGuide === "object") {
+      const g = p.sizeGuide as SizeGuideData;
+      setSizeGuideTitle(g.title || "SIZE GUIDE");
+      setSizeGuideSubtitle(g.subtitle || "FIND YOUR PERFECT FIT");
+      setMeasurementType(g.measurementType === "GARMENT" ? "GARMENT" : "BODY");
+      setCustomRows(Array.isArray(g.sizeChart) && g.sizeChart.length ? g.sizeChart : MASTER_SIZE_CHART);
+      setCustomNotes(Array.isArray(g.notes) ? g.notes.join("\n") : "");
+    } else {
+      setSizeGuideTitle("SIZE GUIDE");
+      setSizeGuideSubtitle("FIND YOUR PERFECT FIT");
+      setMeasurementType("BODY");
+      setCustomRows(MASTER_SIZE_CHART);
+      setCustomNotes("");
+    }
   }
 
   function startNew() {
@@ -281,6 +313,12 @@ export function AdminProducts() {
     setYoutubeInput("");
     setInstagramInput("");
     setMediaUrlInput("");
+    setUseMasterSizeGuide(true);
+    setSizeGuideTitle("SIZE GUIDE");
+    setSizeGuideSubtitle("FIND YOUR PERFECT FIT");
+    setMeasurementType("BODY");
+    setCustomRows(MASTER_SIZE_CHART);
+    setCustomNotes("");
     setShowForm(true);
     setUploadError("");
   }
@@ -325,6 +363,18 @@ export function AdminProducts() {
       status: form.status,
       inStock: form.inStock,
       isNewArrival: form.isNewArrival,
+      useMasterSizeGuide,
+      sizeGuide: useMasterSizeGuide
+        ? null
+        : {
+            title: sizeGuideTitle.trim() || "SIZE GUIDE",
+            subtitle: sizeGuideSubtitle.trim() || "PRODUCT MEASUREMENTS",
+            measurementType,
+            sizeChart: customRows,
+            notes: customNotes.trim()
+              ? customNotes.split("\n").map((n) => n.trim()).filter(Boolean)
+              : undefined,
+          },
     };
 
     try {
@@ -901,6 +951,245 @@ export function AdminProducts() {
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* SIZE GUIDE SECTION */}
+            <div className="md:col-span-2 rounded-sm border border-brand-border bg-white p-5 shadow-xs">
+              <div className="border-b border-brand-border/60 pb-3 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-base font-medium uppercase tracking-wider text-brand-text">SIZE GUIDE CONFIGURATION</p>
+                  <p className="mt-1 text-xs text-brand-muted">
+                    Choose whether this product follows the Shaan-e-Taj Master Size Guide or custom product-specific measurements.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-medium uppercase tracking-wider text-brand-muted">Use Master Size Guide?</span>
+                  <button
+                    type="button"
+                    onClick={() => setUseMasterSizeGuide(!useMasterSizeGuide)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      useMasterSizeGuide ? "bg-rose" : "bg-neutral-300"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                        useMasterSizeGuide ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                  <span className="text-xs font-semibold text-rose-dark">
+                    {useMasterSizeGuide ? "YES (Master)" : "NO (Custom)"}
+                  </span>
+                </div>
+              </div>
+
+              {!useMasterSizeGuide ? (
+                <div className="mt-5 space-y-5 rounded-sm border border-rose/30 bg-ivory/40 p-4">
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <label className="text-xs">
+                      Guide Title
+                      <input
+                        className="mt-1 w-full border border-brand-border bg-white px-3 py-1.5 text-xs"
+                        value={sizeGuideTitle}
+                        onChange={(e) => setSizeGuideTitle(e.target.value)}
+                        placeholder="e.g. SIZE GUIDE"
+                      />
+                    </label>
+                    <label className="text-xs">
+                      Subtitle
+                      <input
+                        className="mt-1 w-full border border-brand-border bg-white px-3 py-1.5 text-xs"
+                        value={sizeGuideSubtitle}
+                        onChange={(e) => setSizeGuideSubtitle(e.target.value)}
+                        placeholder="e.g. READY-MADE KURTI MEASUREMENTS"
+                      />
+                    </label>
+                    <label className="text-xs">
+                      Measurement Type
+                      <select
+                        className="mt-1 w-full border border-brand-border bg-white px-3 py-1.5 text-xs"
+                        value={measurementType}
+                        onChange={(e) => setMeasurementType(e.target.value as MeasurementType)}
+                      >
+                        <option value="BODY">Body Measurements (Customer Body Size)</option>
+                        <option value="GARMENT">Garment Measurements (Finished Outfit Size)</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <div>
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-brand-text">
+                        Custom Size Chart Rows (Measurements in Inches)
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setCustomRows(MASTER_SIZE_CHART)}
+                          className="rounded-xs border border-brand-border bg-white px-2.5 py-1 text-[10px] uppercase tracking-wider text-brand-muted hover:bg-ivory-2"
+                        >
+                          Reset to Master
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setCustomRows((prev) => [
+                              ...prev,
+                              { size: "Custom", ukIndSize: "-", bust: 38, waist: 32, hip: 40 },
+                            ])
+                          }
+                          className="rounded-xs bg-rose px-2.5 py-1 text-[10px] uppercase tracking-wider text-white"
+                        >
+                          + Add Row
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="overflow-x-auto rounded border border-brand-border bg-white">
+                      <table className="w-full min-w-[620px] text-xs">
+                        <thead>
+                          <tr className="border-b border-brand-border bg-ivory-2 text-[10px] uppercase tracking-wider text-brand-muted">
+                            <th className="p-2 text-left">Size</th>
+                            <th className="p-2 text-left">UK/Ind</th>
+                            <th className="p-2 text-left">Bust (in)</th>
+                            <th className="p-2 text-left">Waist (in)</th>
+                            <th className="p-2 text-left">Hip (in)</th>
+                            <th className="p-2 text-left">Length (in)</th>
+                            <th className="p-2 text-left">Shoulder (in)</th>
+                            <th className="p-2 text-center">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-brand-border/60">
+                          {customRows.map((r, idx) => (
+                            <tr key={idx} className="hover:bg-ivory/40">
+                              <td className="p-1.5">
+                                <input
+                                  className="w-16 border px-1.5 py-1 font-medium"
+                                  value={r.size}
+                                  onChange={(e) => {
+                                    const next = [...customRows];
+                                    next[idx] = { ...next[idx], size: e.target.value };
+                                    setCustomRows(next);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  className="w-14 border px-1.5 py-1 font-mono text-center"
+                                  value={r.ukIndSize}
+                                  onChange={(e) => {
+                                    const next = [...customRows];
+                                    next[idx] = { ...next[idx], ukIndSize: e.target.value };
+                                    setCustomRows(next);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  className="w-16 border px-1.5 py-1"
+                                  value={r.bust}
+                                  onChange={(e) => {
+                                    const next = [...customRows];
+                                    next[idx] = { ...next[idx], bust: Number(e.target.value) };
+                                    setCustomRows(next);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  className="w-16 border px-1.5 py-1"
+                                  value={r.waist}
+                                  onChange={(e) => {
+                                    const next = [...customRows];
+                                    next[idx] = { ...next[idx], waist: Number(e.target.value) };
+                                    setCustomRows(next);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  className="w-16 border px-1.5 py-1"
+                                  value={r.hip}
+                                  onChange={(e) => {
+                                    const next = [...customRows];
+                                    next[idx] = { ...next[idx], hip: Number(e.target.value) };
+                                    setCustomRows(next);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  placeholder="opt"
+                                  className="w-16 border px-1.5 py-1"
+                                  value={r.topLength ?? ""}
+                                  onChange={(e) => {
+                                    const next = [...customRows];
+                                    next[idx] = {
+                                      ...next[idx],
+                                      topLength: e.target.value ? Number(e.target.value) : undefined,
+                                    };
+                                    setCustomRows(next);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  placeholder="opt"
+                                  className="w-16 border px-1.5 py-1"
+                                  value={r.shoulder ?? ""}
+                                  onChange={(e) => {
+                                    const next = [...customRows];
+                                    next[idx] = {
+                                      ...next[idx],
+                                      shoulder: e.target.value ? Number(e.target.value) : undefined,
+                                    };
+                                    setCustomRows(next);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1.5 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => setCustomRows((prev) => prev.filter((_, i) => i !== idx))}
+                                  disabled={customRows.length <= 1}
+                                  className="rounded text-[11px] text-red-600 hover:underline disabled:opacity-30"
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <label className="block text-xs">
+                    Custom Notes / Policy Disclaimers (one per line)
+                    <textarea
+                      rows={2}
+                      className="mt-1 w-full border border-brand-border bg-white px-3 py-1.5 text-xs"
+                      placeholder="e.g. This outfit includes an extra 2-inch margin inside for easy loosening."
+                      value={customNotes}
+                      onChange={(e) => setCustomNotes(e.target.value)}
+                    />
+                  </label>
+                </div>
+              ) : (
+                <div className="mt-3 rounded border border-brand-border/60 bg-ivory/50 p-3 text-xs text-brand-muted">
+                  ✓ This product will display the standard <strong>Shaan-e-Taj Master Size Guide</strong> (XS to 3XL, UK 6–18 body measurements, height length guide, and fit guide silhouettes).
+                </div>
+              )}
             </div>
 
             <label className="text-sm md:col-span-2">

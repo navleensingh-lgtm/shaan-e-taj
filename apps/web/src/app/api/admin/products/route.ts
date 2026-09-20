@@ -72,6 +72,8 @@ export async function POST(req: Request) {
       isNewArrival: body.isNewArrival !== false,
       inStock: body.inStock !== false,
       stitchingAvailable: body.stitchingAvailable !== false,
+      useMasterSizeGuide: body.useMasterSizeGuide !== false,
+      sizeGuide: body.sizeGuide ?? null,
       publishSource: PublishSource.ADMIN,
       publishedAt: body.status === "DRAFT" ? null : new Date(),
       images: imagesPayload.length

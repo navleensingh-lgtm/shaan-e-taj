@@ -9,6 +9,8 @@ import { orderWhatsAppUrl } from "@/lib/whatsapp";
 import { trackEvent } from "@/lib/api";
 import { OrderPricingSummary } from "@/components/OrderPricingSummary";
 import { StitchingSelector } from "@/components/StitchingSelector";
+import { SizeGuideModal } from "@/components/SizeGuideModal";
+import { resolveSizeGuide } from "@/lib/size-guide";
 import type { StitchingChoice } from "@/lib/order-pricing";
 
 type Product = {
@@ -21,6 +23,8 @@ type Product = {
   color?: string | null;
   priceInPaise: number;
   stitchingAvailable: boolean;
+  useMasterSizeGuide?: boolean | null;
+  sizeGuide?: unknown;
 };
 
 export function StitchingOptions({ product }: { product: Product }) {
@@ -29,7 +33,10 @@ export function StitchingOptions({ product }: { product: Product }) {
   const settings = useStoreSettings();
   const [stitching, setStitching] = useState<StitchingChoice>("UNSTITCHED");
   const [quantity, setQuantity] = useState(1);
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const pricing = useProductPricing(product.priceInPaise, stitching, quantity);
+
+  const resolvedGuide = resolveSizeGuide(product);
 
   function orderNow() {
     setStitchingType(stitching);
@@ -83,6 +90,29 @@ export function StitchingOptions({ product }: { product: Product }) {
         </div>
       </div>
 
+      {/* Size Guide Trigger */}
+      <div className="mb-4 flex items-center justify-between border-b border-brand-border/60 pb-3">
+        <div className="flex items-center gap-1.5 text-xs text-brand-muted">
+          <svg className="h-4 w-4 text-gold-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+          <span className="uppercase tracking-wider text-[10px] font-medium text-brand-text">
+            {product.useMasterSizeGuide === false ? "Custom Product Sizing" : "Standard Fit Guide"}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setSizeGuideOpen(true);
+            trackEvent("size_guide_open", { productId: product.id });
+          }}
+          className="group inline-flex items-center gap-1.5 rounded-sm border border-rose/40 bg-ivory-2/70 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider text-rose-dark transition hover:border-rose hover:bg-rose hover:text-white"
+        >
+          <span>📏</span>
+          <span>Size Guide</span>
+        </button>
+      </div>
+
       {product.stitchingAvailable && (
         <StitchingSelector
           value={stitching}
@@ -125,6 +155,14 @@ export function StitchingOptions({ product }: { product: Product }) {
           Order on WhatsApp
         </a>
       </div>
+
+      <SizeGuideModal
+        isOpen={sizeGuideOpen}
+        onClose={() => setSizeGuideOpen(false)}
+        guide={resolvedGuide}
+        productName={product.name}
+        categoryName={product.subCategory || product.mainCategory}
+      />
     </div>
   );
 }

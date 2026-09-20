@@ -56,6 +56,8 @@ export async function PATCH(req: Request, { params }: Params) {
   if (body.isNewArrival != null) data.isNewArrival = Boolean(body.isNewArrival);
   if (body.inStock != null) data.inStock = Boolean(body.inStock);
   if (body.stitchingAvailable != null) data.stitchingAvailable = Boolean(body.stitchingAvailable);
+  if (body.useMasterSizeGuide !== undefined) data.useMasterSizeGuide = Boolean(body.useMasterSizeGuide);
+  if (body.sizeGuide !== undefined) data.sizeGuide = body.sizeGuide;
   if (body.status != null) {
     data.status = body.status as ProductStatus;
     if (body.status === ProductStatus.PUBLISHED) {

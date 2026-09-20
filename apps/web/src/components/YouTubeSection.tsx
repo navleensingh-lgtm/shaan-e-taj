@@ -3,6 +3,7 @@ import { getPublicStoreSettings } from "@/lib/store-settings";
 import { getLatestYoutubeVideoIncludingShorts } from "@/lib/youtube-latest";
 import { siteConfig } from "@/lib/site-config";
 import { SocialLinks } from "@/components/SocialLinks";
+import { YouTubeFacade } from "@/components/YouTubeFacade";
 
 export async function YouTubeSection() {
   const store = await getPublicStoreSettings();
@@ -27,13 +28,10 @@ export async function YouTubeSection() {
           <p className="text-[10px] uppercase tracking-[0.2em] text-rose">Latest video</p>
           <h3 className="mt-2 text-lg text-brand-text">{latest.title}</h3>
           <div className="relative mt-4 aspect-video w-full overflow-hidden rounded-sm bg-brand-text shadow-soft">
-            <iframe
+            <YouTubeFacade
+              videoId={latest.videoId}
               title={latest.title}
-              src={`https://www.youtube-nocookie.com/embed/${latest.videoId}?rel=0`}
-              className="absolute inset-0 h-full w-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              loading="lazy"
+              thumbnailUrl={latest.thumbnailUrl}
             />
           </div>
           <div className="mt-5 flex flex-wrap gap-3">

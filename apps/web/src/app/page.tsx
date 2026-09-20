@@ -5,7 +5,7 @@ import { YouTubeSection } from "@/components/YouTubeSection";
 import { MarqueeTicker } from "@/components/MarqueeTicker";
 import { EditorialHero } from "@/components/EditorialHero";
 import { EditorialVideoSection } from "@/components/EditorialVideoSection";
-import { getHomeNewArrivals, listProducts } from "@/lib/products-server";
+import { getHomeNewArrivals } from "@/lib/products-server";
 import { getPublicStoreSettings } from "@/lib/store-settings";
 import { videoEmbed } from "@/lib/product-media";
 
@@ -39,15 +39,17 @@ const occasions = [
 ];
 
 export default async function HomePage() {
-  const items = await getHomeNewArrivals(8);
-  const storeSettings = await getPublicStoreSettings();
+  // Parallelize independent data requirements
+  const [items, storeSettings] = await Promise.all([
+    getHomeNewArrivals(8),
+    getPublicStoreSettings(),
+  ]);
 
-  // Find any published product video to feature in hero or editorial campaign section
-  const productsWithMedia = await listProducts({ limit: "12" });
+  // Find any published product video to feature in hero or editorial campaign section from the fetched items
   let campaignVideoUrl: string | undefined;
   let heroFallbackImage: string | undefined;
 
-  for (const p of productsWithMedia.items) {
+  for (const p of items) {
     if (!heroFallbackImage && p.images?.[0]?.url) {
       heroFallbackImage = p.images[0].url;
     }

@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { siteConfig } from "@/lib/site-config";
-import { videoEmbed, parseYouTube } from "@/lib/product-media";
+import { parseYouTube } from "@/lib/product-media";
 import { ViewportVideo } from "./ViewportVideo";
 
 interface EditorialHeroProps {
@@ -13,46 +14,69 @@ interface EditorialHeroProps {
 export function EditorialHero({ videoUrl, fallbackImageUrl }: EditorialHeroProps) {
   const ytParsed = videoUrl ? parseYouTube(videoUrl) : null;
   const isYouTube = Boolean(ytParsed?.videoId);
-  const ytBgSrc = ytParsed?.videoId
-    ? `https://www.youtube-nocookie.com/embed/${ytParsed.videoId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${ytParsed.videoId}&playsinline=1&modestbranding=1&disablekb=1&fs=0`
-    : null;
+
+  // Defer heavy YouTube iframe until after hydration and initial paint
+  const [mountYouTube, setMountYouTube] = useState(false);
+
+  useEffect(() => {
+    if (!isYouTube) return;
+    // Delay iframe load so hero typography, CTAs and poster appear instantaneously
+    const timer = setTimeout(() => {
+      setMountYouTube(true);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [isYouTube]);
+
+  const ytBgSrc =
+    isYouTube && mountYouTube && ytParsed?.videoId
+      ? `https://www.youtube-nocookie.com/embed/${ytParsed.videoId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${ytParsed.videoId}&playsinline=1&modestbranding=1&disablekb=1&fs=0`
+      : null;
 
   return (
     <section className="relative flex min-h-[calc(100vh-68px)] items-center justify-center overflow-hidden bg-espresso text-ivory">
       {/* Background Media */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        {isYouTube && ytBgSrc ? (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            {/* 16:9 responsive scale to cover the container while cropping chrome */}
-            <iframe
-              src={ytBgSrc}
-              title="Editorial Campaign Background"
-              className="pointer-events-none absolute min-h-[120%] min-w-[120%] w-[150vw] h-[150vh] object-cover opacity-45 filter brightness-95 contrast-105 border-0"
-              allow="autoplay; encrypted-media"
-              tabIndex={-1}
+        {/* Instant Fallback / Poster Image Layer (Always visible first) */}
+        {fallbackImageUrl && (
+          <div
+            className="absolute inset-0 h-full w-full bg-cover bg-center opacity-40 transition-transform duration-1000 scale-100 group-hover:scale-105"
+            style={{ backgroundImage: `url(${fallbackImageUrl})` }}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Video Progressive Enhancement Layer */}
+        {isYouTube ? (
+          ytBgSrc ? (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <iframe
+                src={ytBgSrc}
+                title="Editorial Campaign Background"
+                className="pointer-events-none absolute min-h-[120%] min-w-[120%] w-[150vw] h-[150vh] object-cover opacity-45 filter brightness-95 contrast-105 border-0 animate-fade-in"
+                allow="autoplay; encrypted-media"
+                tabIndex={-1}
+              />
+            </div>
+          ) : null
+        ) : videoUrl ? (
+          <div className="absolute inset-0">
+            <ViewportVideo
+              src={videoUrl}
+              poster={fallbackImageUrl}
+              priority={true}
+              className="h-full w-full object-cover opacity-45 filter brightness-95 contrast-105"
             />
           </div>
-        ) : videoUrl ? (
-          <ViewportVideo
-            src={videoUrl}
-            poster={fallbackImageUrl}
-            className="h-full w-full object-cover opacity-45 filter brightness-95 contrast-105"
-          />
-        ) : fallbackImageUrl ? (
-          <div
-            className="h-full w-full bg-cover bg-center opacity-40 transition-transform duration-1000 scale-100 group-hover:scale-105"
-            style={{ backgroundImage: `url(${fallbackImageUrl})` }}
-          />
-        ) : (
+        ) : !fallbackImageUrl ? (
           <div className="h-full w-full bg-gradient-to-br from-[#1b120c] via-espresso to-[#24170f]" />
-        )}
+        ) : null}
 
         {/* Luxury Vignettes & Depth Gradients */}
         <div className="absolute inset-0 bg-gradient-to-t from-espresso via-transparent to-espresso/50" />
         <div className="absolute inset-0 bg-radial from-transparent via-espresso/30 to-espresso/80" />
       </div>
 
-      {/* Hero Foreground Content */}
+      {/* Hero Foreground Content - Guaranteed to render immediately */}
       <div className="relative z-10 max-w-3xl px-6 py-20 text-center sm:px-8">
         {/* Subtle Gold Accent Divider */}
         <div className="mx-auto mb-6 flex items-center justify-center gap-3 animate-editorial-reveal">

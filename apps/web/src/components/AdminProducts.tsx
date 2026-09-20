@@ -108,7 +108,7 @@ export function AdminProducts() {
   const [youtubeInput, setYoutubeInput] = useState("");
   const [instagramInput, setInstagramInput] = useState("");
   const [mediaUrlInput, setMediaUrlInput] = useState("");
-  const [activeVideoTab, setActiveVideoTab] = useState<"youtube" | "instagram" | "direct">("youtube");
+  const [activeVideoTab, setActiveVideoTab] = useState<"upload" | "youtube" | "instagram" | "direct">("upload");
   // Size Guide States
   const [useMasterSizeGuide, setUseMasterSizeGuide] = useState(true);
   const [sizeGuideTitle, setSizeGuideTitle] = useState("SIZE GUIDE");
@@ -915,6 +915,17 @@ export function AdminProducts() {
                   <div className="mt-3 flex gap-1 border-b border-brand-border/60 pb-2">
                     <button
                       type="button"
+                      onClick={() => setActiveVideoTab("upload")}
+                      className={`flex-1 rounded-xs px-2.5 py-1.5 text-[11px] font-medium uppercase tracking-wider transition ${
+                        activeVideoTab === "upload"
+                          ? "bg-rose text-white shadow-xs"
+                          : "border border-brand-border bg-white text-brand-muted hover:text-brand-text hover:bg-ivory-2"
+                      }`}
+                    >
+                      📁 Upload Video
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setActiveVideoTab("youtube")}
                       className={`flex-1 rounded-xs px-2.5 py-1.5 text-[11px] font-medium uppercase tracking-wider transition ${
                         activeVideoTab === "youtube"
@@ -922,7 +933,7 @@ export function AdminProducts() {
                           : "border border-brand-border bg-white text-brand-muted hover:text-brand-text hover:bg-ivory-2"
                       }`}
                     >
-                      ▶ YouTube / Shorts
+                      ▶ YouTube
                     </button>
                     <button
                       type="button"
@@ -933,7 +944,7 @@ export function AdminProducts() {
                           : "border border-brand-border bg-white text-brand-muted hover:text-brand-text hover:bg-ivory-2"
                       }`}
                     >
-                      📸 Instagram Reel
+                      📸 Instagram
                     </button>
                     <button
                       type="button"
@@ -944,9 +955,62 @@ export function AdminProducts() {
                           : "border border-brand-border bg-white text-brand-muted hover:text-brand-text hover:bg-ivory-2"
                       }`}
                     >
-                      🎬 Direct URL
+                      🎬 Video URL
                     </button>
                   </div>
+
+                  {/* Active Tab: DIRECT VIDEO UPLOAD Dropzone */}
+                  {activeVideoTab === "upload" && (
+                    <div className="mt-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-brand-text flex items-center gap-1.5">
+                          <span className="text-rose">📁</span> DIRECT VIDEO UPLOAD
+                        </label>
+                        <span className="text-[9px] text-brand-subtle">MP4, WebM &bull; Max 1 GB</span>
+                      </div>
+
+                      <label
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setDragOverVideo(true);
+                        }}
+                        onDragLeave={() => setDragOverVideo(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setDragOverVideo(false);
+                          const file = e.dataTransfer.files?.[0];
+                          if (file) handleVideoFile(file);
+                        }}
+                        className={`flex flex-col items-center justify-center rounded border-2 border-dashed p-6 text-center cursor-pointer transition-colors ${
+                          dragOverVideo
+                            ? "border-rose bg-rose/10 text-rose"
+                            : "border-brand-border bg-white hover:border-rose/60 hover:bg-ivory-2/50 text-brand-muted"
+                        }`}
+                      >
+                        <input
+                          type="file"
+                          accept="video/mp4,video/webm,video/quicktime"
+                          disabled={uploading}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleVideoFile(file);
+                              e.target.value = "";
+                            }
+                          }}
+                          className="hidden"
+                        />
+                        <svg className="h-8 w-8 text-rose mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <p className="text-xs font-medium text-brand-text">Drag &amp; drop video here</p>
+                        <p className="text-[11px] text-brand-subtle mt-0.5">
+                          or <span className="text-rose underline font-semibold">Click to upload</span>
+                        </p>
+                        <p className="text-[10px] text-brand-subtle mt-1.5">MP4, WebM &bull; Maximum supported size: 1 GB</p>
+                      </label>
+                    </div>
+                  )}
 
                   {/* Active Tab: YouTube Video / Short Input */}
                   {activeVideoTab === "youtube" && (
@@ -1014,7 +1078,7 @@ export function AdminProducts() {
                     </div>
                   )}
 
-                  {/* Active Tab: Direct Video File Upload or Direct MP4 Link */}
+                  {/* Active Tab: Direct Video Link */}
                   {activeVideoTab === "direct" && (
                     <div className="mt-3 rounded border border-brand-border/70 bg-white p-3 space-y-2 shadow-2xs">
                       <div className="flex items-center justify-between">
@@ -1143,7 +1207,7 @@ export function AdminProducts() {
                     </div>
                   ) : (
                     <div className="mt-4 flex flex-1 items-center justify-center rounded border border-dashed border-brand-border/60 bg-white/60 p-6 text-center text-xs text-brand-subtle">
-                      No video attached yet. Enter a YouTube or Instagram Reel link above and click Add.
+                      No video attached yet. Drag &amp; drop an MP4 above, or attach a YouTube or Instagram Reel link.
                     </div>
                   )}
                 </div>

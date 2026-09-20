@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Product } from "@/lib/api";
 import { ProductGrid } from "@/components/ProductGrid";
+import { GridControl } from "@/components/GridControl";
 import {
   CatalogFilterDrawer,
   type CategoryOption,
@@ -237,6 +238,9 @@ export function CatalogClient({
               </span>
             )}
           </button>
+
+          {/* Grid Column Selector */}
+          <GridControl />
 
           {/* Sort Selector */}
           <div className="flex items-center gap-1.5 rounded-xs border border-brand-border bg-white px-3 py-2 shadow-2xs">

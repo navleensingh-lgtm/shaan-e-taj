@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { apiFetch, uploadAdminImage } from "@/lib/api-client";
+import { AdminConfirmModal } from "@/components/AdminConfirmModal";
 import {
   DEFAULT_HOMEPAGE_CMS,
   type HomepageCmsConfig,
@@ -28,6 +29,8 @@ export function AdminHomepageCms() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [deleteOccasionTarget, setDeleteOccasionTarget] = useState<OccasionCardItem | null>(null);
+  const [deleteCategoryTarget, setDeleteCategoryTarget] = useState<CategoryCardItem | null>(null);
 
   useEffect(() => {
     apiFetch("/admin/cms/homepage")
@@ -365,17 +368,8 @@ export function AdminHomepageCms() {
                     </span>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (!confirm(`Remove "${occ.title}" occasion card?`)) return;
-                        setCms({
-                          ...cms,
-                          shopByOccasion: {
-                            ...cms.shopByOccasion,
-                            items: cms.shopByOccasion.items.filter((x) => x.id !== occ.id),
-                          },
-                        });
-                      }}
-                      className="text-xs text-red-600 hover:underline"
+                      onClick={() => setDeleteOccasionTarget(occ)}
+                      className="text-xs text-red-600 hover:underline cursor-pointer"
                     >
                       Delete
                     </button>
@@ -546,17 +540,8 @@ export function AdminHomepageCms() {
                     </span>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (!confirm(`Remove "${cat.title}" category card?`)) return;
-                        setCms({
-                          ...cms,
-                          shopByCategory: {
-                            ...cms.shopByCategory,
-                            items: cms.shopByCategory.items.filter((x) => x.id !== cat.id),
-                          },
-                        });
-                      }}
-                      className="text-xs text-red-600 hover:underline"
+                      onClick={() => setDeleteCategoryTarget(cat)}
+                      className="text-xs text-red-600 hover:underline cursor-pointer"
                     >
                       Delete
                     </button>
@@ -1198,6 +1183,58 @@ export function AdminHomepageCms() {
           </div>
         </div>
       )}
+
+      {/* Occasion deletion confirmation */}
+      <AdminConfirmModal
+        isOpen={Boolean(deleteOccasionTarget)}
+        title="Remove Occasion Card"
+        message={
+          deleteOccasionTarget
+            ? `Are you sure you want to remove "${deleteOccasionTarget.title}" from the homepage "Shop by Occasion" section?`
+            : ""
+        }
+        confirmLabel="Remove Card"
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={() => {
+          if (!deleteOccasionTarget || !cms) return;
+          setCms({
+            ...cms,
+            shopByOccasion: {
+              ...cms.shopByOccasion,
+              items: cms.shopByOccasion.items.filter((x) => x.id !== deleteOccasionTarget.id),
+            },
+          });
+          setDeleteOccasionTarget(null);
+        }}
+        onCancel={() => setDeleteOccasionTarget(null)}
+      />
+
+      {/* Category card deletion confirmation */}
+      <AdminConfirmModal
+        isOpen={Boolean(deleteCategoryTarget)}
+        title="Remove Category Card"
+        message={
+          deleteCategoryTarget
+            ? `Are you sure you want to remove "${deleteCategoryTarget.title}" from the homepage "Shop by Category" section?`
+            : ""
+        }
+        confirmLabel="Remove Card"
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={() => {
+          if (!deleteCategoryTarget || !cms) return;
+          setCms({
+            ...cms,
+            shopByCategory: {
+              ...cms.shopByCategory,
+              items: cms.shopByCategory.items.filter((x) => x.id !== deleteCategoryTarget.id),
+            },
+          });
+          setDeleteCategoryTarget(null);
+        }}
+        onCancel={() => setDeleteCategoryTarget(null)}
+      />
     </div>
   );
 }

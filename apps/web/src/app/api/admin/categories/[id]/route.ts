@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma, CategoryKind } from "@shaan-e-taj/database";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { countProductsUsingCategorySlug, slugifyCategory } from "@/lib/categories-server";
+import { revalidateShop } from "@/lib/revalidate-shop";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -68,6 +69,7 @@ export async function PATCH(req: Request, { params }: Params) {
   }
 
   const category = await prisma.category.update({ where: { id }, data });
+  revalidateShop();
   return NextResponse.json({ category });
 }
 
@@ -94,5 +96,6 @@ export async function DELETE(_req: Request, { params }: Params) {
   }
 
   await prisma.category.delete({ where: { id } });
+  revalidateShop();
   return NextResponse.json({ ok: true });
 }

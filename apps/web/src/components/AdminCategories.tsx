@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch, uploadAdminImage } from "@/lib/api-client";
+import { AdminConfirmModal } from "@/components/AdminConfirmModal";
 
 type CategoryRow = {
   id: string;
@@ -29,6 +30,8 @@ export function AdminCategories() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<CategoryRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   function load() {
     apiFetch("/admin/categories")
@@ -113,16 +116,20 @@ export function AdminCategories() {
     }
   }
 
-  async function removeCategory(c: CategoryRow) {
-    if (!confirm(`Delete category "${c.name}"? This only works when no products use it.`)) return;
+  async function confirmRemoveCategory() {
+    if (!deleteTarget) return;
     setError("");
+    setDeleting(true);
     try {
-      await apiFetch(`/admin/categories/${c.id}`, { method: "DELETE" });
-      setMessage(`Deleted "${c.name}".`);
-      if (editingId === c.id) resetForm();
+      await apiFetch(`/admin/categories/${deleteTarget.id}`, { method: "DELETE" });
+      setMessage(`Deleted "${deleteTarget.name}".`);
+      if (editingId === deleteTarget.id) resetForm();
+      setDeleteTarget(null);
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Delete failed");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -233,7 +240,7 @@ export function AdminCategories() {
                   <button type="button" className="text-rose underline" onClick={() => startEdit(c)}>
                     Edit
                   </button>
-                  <button type="button" className="text-rose underline" onClick={() => removeCategory(c)}>
+                  <button type="button" className="text-rose underline" onClick={() => setDeleteTarget(c)}>
                     Delete
                   </button>
                 </span>
@@ -255,7 +262,7 @@ export function AdminCategories() {
                   <button type="button" className="text-rose underline" onClick={() => startEdit(c)}>
                     Edit
                   </button>
-                  <button type="button" className="text-rose underline" onClick={() => removeCategory(c)}>
+                  <button type="button" className="text-rose underline" onClick={() => setDeleteTarget(c)}>
                     Delete
                   </button>
                 </span>
@@ -264,6 +271,22 @@ export function AdminCategories() {
           </ul>
         </div>
       </div>
+
+      <AdminConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        title="Delete Category"
+        message={
+          deleteTarget
+            ? `Are you sure you want to delete category "${deleteTarget.name}" (${deleteTarget.slug})?\n\nThis action cannot be undone. You can only delete categories that have no active products attached.`
+            : ""
+        }
+        confirmLabel="Delete Category"
+        cancelLabel="Keep Category"
+        variant="danger"
+        isLoading={deleting}
+        onConfirm={confirmRemoveCategory}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

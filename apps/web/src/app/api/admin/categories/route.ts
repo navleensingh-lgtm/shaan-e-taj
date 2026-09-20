@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma, CategoryKind } from "@shaan-e-taj/database";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { countProductsUsingCategorySlug, listCategories, slugifyCategory } from "@/lib/categories-server";
+import { revalidateShop } from "@/lib/revalidate-shop";
 
 export async function GET() {
   if (!(await requireAdminSession())) {
@@ -43,5 +44,6 @@ export async function POST(req: Request) {
     },
   });
 
+  revalidateShop();
   return NextResponse.json({ category });
 }

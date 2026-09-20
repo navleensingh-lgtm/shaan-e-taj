@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { apiFetch, uploadAdminImage } from "@/lib/api-client";
+import { AdminConfirmModal } from "@/components/AdminConfirmModal";
 import {
   inferMediaKind,
   MAX_PRODUCT_IMAGE_MB,
@@ -107,6 +108,7 @@ export function AdminProducts() {
   const [youtubeInput, setYoutubeInput] = useState("");
   const [instagramInput, setInstagramInput] = useState("");
   const [mediaUrlInput, setMediaUrlInput] = useState("");
+  const [activeVideoTab, setActiveVideoTab] = useState<"youtube" | "instagram" | "direct">("youtube");
   // Size Guide States
   const [useMasterSizeGuide, setUseMasterSizeGuide] = useState(true);
   const [sizeGuideTitle, setSizeGuideTitle] = useState("SIZE GUIDE");
@@ -115,8 +117,14 @@ export function AdminProducts() {
   const [customRows, setCustomRows] = useState<SizeChartRow[]>(MASTER_SIZE_CHART);
   const [customNotes, setCustomNotes] = useState<string>("");
 
+  // Modal dialog states
+  const [deleteProductTarget, setDeleteProductTarget] = useState<{ id: string; name: string } | null>(null);
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
+
   function loadCategories() {
-    fetch("/api/categories")
+    fetch(`/api/categories?t=${Date.now()}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
         const all: CategoryOption[] = d.categories ?? [];
@@ -337,6 +345,8 @@ export function AdminProducts() {
       setCustomRows(MASTER_SIZE_CHART);
       setCustomNotes("");
     }
+    // Reload categories whenever form is opened
+    loadCategories();
   }
 
   function startNew() {
@@ -355,26 +365,36 @@ export function AdminProducts() {
     setCustomNotes("");
     setShowForm(true);
     setUploadError("");
+    // Reload categories whenever form is opened
+    loadCategories();
   }
 
-  async function save() {
+  function handleSaveClick() {
+    setUploadError("");
     if (!form.name.trim()) {
-      alert("Product name is required");
+      setUploadError("Product name is required.");
       return;
     }
     const priceNum = Number(form.priceRupees);
     if (!priceNum || priceNum <= 0) {
-      alert("Enter a valid price in ₹");
+      setUploadError("Enter a valid price in ₹ greater than 0.");
       return;
     }
     if (!images.length && !editingId) {
-      alert("Please upload at least one product photo.");
+      setUploadError("Please upload at least one product photo.");
       return;
     }
+    setShowSaveConfirm(true);
+  }
+
+  async function executeSave() {
+    const priceNum = Number(form.priceRupees);
+    setIsSavingProduct(true);
+    setUploadError("");
 
     const payload = {
-      name: form.name,
-      slug: form.slug || undefined,
+      name: form.name.trim(),
+      slug: form.slug.trim() || undefined,
       description: form.description,
       mainCategory: form.mainCategory,
       subCategory: form.subCategory,
@@ -440,13 +460,14 @@ export function AdminProducts() {
         slug = res.product?.slug;
       }
 
+      setShowSaveConfirm(false);
       setShowForm(false);
       setEditingId(null);
       setForm(emptyForm);
       setImages([]);
       setMediaItems([]);
       setSyncMsg(
-        `Saved! Status: ${payload.status}. ${payload.status === "PUBLISHED" ? "Live on shop now." : "Set Published to show on website."}`
+        `Saved successfully! Status: ${payload.status}. ${payload.status === "PUBLISHED" ? "Product is live on the boutique storefront." : "Product saved as Draft."}`
       );
       load();
       loadCategories();
@@ -454,46 +475,77 @@ export function AdminProducts() {
         window.open(`/product/${slug}?t=${Date.now()}`, "_blank");
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Save failed — please try again");
+      setShowSaveConfirm(false);
+      setUploadError(err instanceof Error ? err.message : "Save failed — please try again");
+    } finally {
+      setIsSavingProduct(false);
     }
   }
 
-  async function removeProduct(id: string, name: string) {
-    const ok = confirm(
-      `Are you sure you want to delete this product?\n\n"${name}" will be removed from the shop.\n\nThis cannot be undone from the admin panel.`
-    );
-    if (!ok) return;
+  async function executeRemoveProduct() {
+    if (!deleteProductTarget) return;
+    setIsDeletingProduct(true);
+    setUploadError("");
     try {
-      await apiFetch(`/admin/products/${id}`, { method: "DELETE" });
-      if (editingId === id) {
+      await apiFetch(`/admin/products/${deleteProductTarget.id}`, { method: "DELETE" });
+      if (editingId === deleteProductTarget.id) {
         setShowForm(false);
         setEditingId(null);
         setForm(emptyForm);
       }
-      setSyncMsg("Product deleted from storefront.");
+      setSyncMsg(`"${deleteProductTarget.name}" removed from storefront.`);
+      setDeleteProductTarget(null);
       load();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Delete failed");
+      setUploadError(err instanceof Error ? err.message : "Delete failed");
+    } finally {
+      setIsDeletingProduct(false);
     }
   }
 
-  const mainOptions = mainCategories.length
-    ? mainCategories
-    : [
-        { slug: "BRIDAL", name: "Bridal", kind: "MAIN" },
-        { slug: "PARTY_WEAR", name: "Party Wear", kind: "MAIN" },
-        { slug: "FESTIVE", name: "Festive", kind: "MAIN" },
-        { slug: "NEW_ARRIVALS", name: "New Arrivals", kind: "MAIN" },
-      ];
+  const defaultMain = [
+    { slug: "BRIDAL", name: "Bridal", kind: "MAIN" },
+    { slug: "PARTY_WEAR", name: "Party Wear", kind: "MAIN" },
+    { slug: "FESTIVE", name: "Festive", kind: "MAIN" },
+    { slug: "NEW_ARRIVALS", name: "New Arrivals", kind: "MAIN" },
+  ];
 
-  const subOptions = subCategories.length
-    ? subCategories
-    : [
-        { slug: "ANARKALI", name: "Anarkali", kind: "SUB" },
-        { slug: "PAKISTANI", name: "Pakistani", kind: "SUB" },
-        { slug: "LEHENGA", name: "Lehenga", kind: "SUB" },
-        { slug: "OTHER", name: "Other", kind: "SUB" },
-      ];
+  const defaultSub = [
+    { slug: "ANARKALI", name: "Anarkali", kind: "SUB" },
+    { slug: "PAKISTANI", name: "Pakistani", kind: "SUB" },
+    { slug: "LEHENGA", name: "Lehenga", kind: "SUB" },
+    { slug: "OTHER", name: "Other", kind: "SUB" },
+  ];
+
+  const mainOptions = useMemo(() => {
+    const list = [...mainCategories];
+    // Merge defaults if not present
+    for (const def of defaultMain) {
+      if (!list.some((c) => c.slug.toUpperCase() === def.slug.toUpperCase())) {
+        list.push(def);
+      }
+    }
+    // Also ensure current product form selection is included
+    if (form.mainCategory && !list.some((c) => c.slug.toUpperCase() === form.mainCategory.toUpperCase())) {
+      list.push({ slug: form.mainCategory, name: form.mainCategory.replace(/_/g, " "), kind: "MAIN" });
+    }
+    return list;
+  }, [mainCategories, form.mainCategory]);
+
+  const subOptions = useMemo(() => {
+    const list = [...subCategories];
+    // Merge defaults if not present
+    for (const def of defaultSub) {
+      if (!list.some((c) => c.slug.toUpperCase() === def.slug.toUpperCase())) {
+        list.push(def);
+      }
+    }
+    // Also ensure current product form selection is included
+    if (form.subCategory && !list.some((c) => c.slug.toUpperCase() === form.subCategory.toUpperCase())) {
+      list.push({ slug: form.subCategory, name: form.subCategory.replace(/_/g, " "), kind: "SUB" });
+    }
+    return list;
+  }, [subCategories, form.subCategory]);
 
   return (
     <div className="mt-12 border border-brand-border bg-white p-6">
@@ -851,129 +903,182 @@ export function AdminProducts() {
                   <div className="flex items-center justify-between border-b border-brand-border/40 pb-2">
                     <div>
                       <h3 className="text-sm font-semibold uppercase tracking-wider text-brand-text">
-                        Product Video {mediaItems.length > 0 && `(${mediaItems.length})`}
+                        Product Videos {mediaItems.length > 0 && `(${mediaItems.length})`}
                       </h3>
                       <p className="mt-0.5 text-[10px] text-brand-muted">
-                        Use an external YouTube or Instagram video link. Videos are not uploaded to the server.
+                        Attach multiple YouTube videos, Shorts, Instagram Reels, and direct video links.
                       </p>
                     </div>
                   </div>
 
-                  {/* YouTube Video / Short Input */}
-                  <div className="mt-3 rounded border border-brand-border/70 bg-white p-3 space-y-2 shadow-2xs">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[11px] font-semibold uppercase tracking-wider text-brand-text flex items-center gap-1.5">
-                        <span className="text-rose">▶</span> YouTube Video / Short
-                      </label>
-                      <span className="text-[9px] text-brand-subtle">Watch, Shorts, youtu.be</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        className="min-w-0 flex-1 border border-brand-border px-2.5 py-1.5 text-xs focus:border-rose focus:outline-none"
-                        placeholder="https://www.youtube.com/shorts/... or /watch?v=..."
-                        value={youtubeInput}
-                        onChange={(e) => setYoutubeInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addYoutube();
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={addYoutube}
-                        className="btn-luxury-primary rounded-xs px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider shrink-0"
-                      >
-                        + Add YouTube
-                      </button>
-                    </div>
+                  {/* Provider Selector Tabs */}
+                  <div className="mt-3 flex gap-1 border-b border-brand-border/60 pb-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveVideoTab("youtube")}
+                      className={`flex-1 rounded-xs px-2.5 py-1.5 text-[11px] font-medium uppercase tracking-wider transition ${
+                        activeVideoTab === "youtube"
+                          ? "bg-rose text-white shadow-xs"
+                          : "border border-brand-border bg-white text-brand-muted hover:text-brand-text hover:bg-ivory-2"
+                      }`}
+                    >
+                      ▶ YouTube / Shorts
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveVideoTab("instagram")}
+                      className={`flex-1 rounded-xs px-2.5 py-1.5 text-[11px] font-medium uppercase tracking-wider transition ${
+                        activeVideoTab === "instagram"
+                          ? "bg-rose text-white shadow-xs"
+                          : "border border-brand-border bg-white text-brand-muted hover:text-brand-text hover:bg-ivory-2"
+                      }`}
+                    >
+                      📸 Instagram Reel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveVideoTab("direct")}
+                      className={`flex-1 rounded-xs px-2.5 py-1.5 text-[11px] font-medium uppercase tracking-wider transition ${
+                        activeVideoTab === "direct"
+                          ? "bg-rose text-white shadow-xs"
+                          : "border border-brand-border bg-white text-brand-muted hover:text-brand-text hover:bg-ivory-2"
+                      }`}
+                    >
+                      🎬 Direct URL
+                    </button>
                   </div>
 
-                  {/* Instagram Reel Input */}
-                  <div className="mt-3 rounded border border-brand-border/70 bg-white p-3 space-y-2 shadow-2xs">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[11px] font-semibold uppercase tracking-wider text-brand-text flex items-center gap-1.5">
-                        <span className="text-rose">📸</span> Instagram Reel
-                      </label>
-                      <span className="text-[9px] text-brand-subtle">instagram.com/reel/…</span>
+                  {/* Active Tab: YouTube Video / Short Input */}
+                  {activeVideoTab === "youtube" && (
+                    <div className="mt-3 rounded border border-brand-border/70 bg-white p-3 space-y-2 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-brand-text flex items-center gap-1.5">
+                          <span className="text-rose">▶</span> YouTube Link
+                        </label>
+                        <span className="text-[9px] text-brand-subtle">Watch, Shorts, youtu.be</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          className="min-w-0 flex-1 border border-brand-border px-2.5 py-1.5 text-xs focus:border-rose focus:outline-none"
+                          placeholder="https://www.youtube.com/shorts/... or /watch?v=..."
+                          value={youtubeInput}
+                          onChange={(e) => setYoutubeInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addYoutube();
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={addYoutube}
+                          className="btn-luxury-primary rounded-xs px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider shrink-0"
+                        >
+                          + Add YouTube
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <input
-                        className="min-w-0 flex-1 border border-brand-border px-2.5 py-1.5 text-xs focus:border-rose focus:outline-none"
-                        placeholder="https://www.instagram.com/reel/..."
-                        value={instagramInput}
-                        onChange={(e) => setInstagramInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addInstagram();
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={addInstagram}
-                        className="btn-luxury-primary rounded-xs px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider shrink-0"
-                      >
-                        + Add Reel
-                      </button>
-                    </div>
-                  </div>
+                  )}
 
-                  {/* Direct Video File Upload or Direct MP4 Link (Collapsible/Optional) */}
-                  <div className="mt-3 rounded border border-brand-border/60 bg-ivory-2/40 p-2.5 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-subtle">
-                        Direct Video URL or Local MP4 (Optional)
-                      </span>
+                  {/* Active Tab: Instagram Reel Input */}
+                  {activeVideoTab === "instagram" && (
+                    <div className="mt-3 rounded border border-brand-border/70 bg-white p-3 space-y-2 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-brand-text flex items-center gap-1.5">
+                          <span className="text-rose">📸</span> Instagram Reel Link
+                        </label>
+                        <span className="text-[9px] text-brand-subtle">instagram.com/reel/… or /p/…</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          className="min-w-0 flex-1 border border-brand-border px-2.5 py-1.5 text-xs focus:border-rose focus:outline-none"
+                          placeholder="https://www.instagram.com/reel/..."
+                          value={instagramInput}
+                          onChange={(e) => setInstagramInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addInstagram();
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={addInstagram}
+                          className="btn-luxury-primary rounded-xs px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider shrink-0"
+                        >
+                          + Add Reel
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <input
-                        className="min-w-0 flex-1 border border-brand-border bg-white px-2.5 py-1 text-xs focus:border-rose focus:outline-none"
-                        placeholder="Direct video link: https://…/video.mp4"
-                        value={mediaUrlInput}
-                        onChange={(e) => setMediaUrlInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addMediaUrl();
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={addMediaUrl}
-                        className="rounded-xs border border-brand-border bg-white px-3 py-1 text-xs font-medium uppercase tracking-wider hover:bg-ivory shrink-0"
-                      >
-                        + URL
-                      </button>
-                    </div>
-                  </div>
+                  )}
 
-                  {/* Video Previews and Media Item List */}
+                  {/* Active Tab: Direct Video File Upload or Direct MP4 Link */}
+                  {activeVideoTab === "direct" && (
+                    <div className="mt-3 rounded border border-brand-border/70 bg-white p-3 space-y-2 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-brand-text flex items-center gap-1.5">
+                          <span className="text-rose">🎬</span> Direct Video Link
+                        </label>
+                        <span className="text-[9px] text-brand-subtle">.mp4, .webm, or external stream</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          className="min-w-0 flex-1 border border-brand-border bg-white px-2.5 py-1.5 text-xs focus:border-rose focus:outline-none"
+                          placeholder="Direct video link: https://…/video.mp4"
+                          value={mediaUrlInput}
+                          onChange={(e) => setMediaUrlInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addMediaUrl();
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={addMediaUrl}
+                          className="btn-luxury-primary rounded-xs px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider shrink-0"
+                        >
+                          + Add Video
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Video Previews and Attached Media Items List */}
                   {mediaItems.length > 0 ? (
                     <div className="mt-4 flex-1 space-y-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-muted">
-                        Attached Video ({mediaItems.length})
-                      </p>
+                      <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-brand-muted">
+                        <span>Attached Videos ({mediaItems.length})</span>
+                        <span className="text-[9px] normal-case text-brand-subtle">Use arrows to change display order</span>
+                      </div>
                       {mediaItems.map((m, index) => {
                         const embed = videoEmbed(m.url);
                         return (
                           <div
                             key={m.id}
-                            className="rounded border border-brand-border/70 bg-white p-2.5 shadow-2xs space-y-2"
+                            className="rounded border border-brand-border/70 bg-white p-3 shadow-2xs space-y-2"
                           >
                             <div className="flex items-center justify-between text-xs">
-                              <span className="rounded bg-rose/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose">
-                                {m.kind}
+                              <span
+                                className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                                  m.kind === "YOUTUBE"
+                                    ? "bg-red-50 text-red-700 border border-red-200"
+                                    : m.kind === "INSTAGRAM"
+                                      ? "bg-pink-50 text-pink-700 border border-pink-200"
+                                      : "bg-neutral-100 text-neutral-800 border border-neutral-300"
+                                }`}
+                              >
+                                {m.kind === "YOUTUBE" ? "▶ YOUTUBE" : m.kind === "INSTAGRAM" ? "📸 INSTAGRAM" : "🎬 DIRECT VIDEO"}
                               </span>
                               <div className="flex items-center gap-1.5">
                                 <button
                                   type="button"
                                   disabled={index === 0}
                                   onClick={() => moveMedia(m.id, -1)}
-                                  className="rounded border border-brand-border px-1.5 py-0.5 text-[10px] hover:bg-ivory-2 disabled:opacity-30"
+                                  className="rounded border border-brand-border px-2 py-0.5 text-[10px] hover:bg-ivory-2 disabled:opacity-30 cursor-pointer"
                                   title="Move up"
                                 >
                                   ↑
@@ -982,7 +1087,7 @@ export function AdminProducts() {
                                   type="button"
                                   disabled={index === mediaItems.length - 1}
                                   onClick={() => moveMedia(m.id, 1)}
-                                  className="rounded border border-brand-border px-1.5 py-0.5 text-[10px] hover:bg-ivory-2 disabled:opacity-30"
+                                  className="rounded border border-brand-border px-2 py-0.5 text-[10px] hover:bg-ivory-2 disabled:opacity-30 cursor-pointer"
                                   title="Move down"
                                 >
                                   ↓
@@ -990,7 +1095,7 @@ export function AdminProducts() {
                                 <button
                                   type="button"
                                   onClick={() => setMediaItems((p) => p.filter((i) => i.id !== m.id))}
-                                  className="rounded border border-rose/30 px-2 py-0.5 text-[10px] text-rose hover:bg-rose/10"
+                                  className="rounded border border-rose/30 px-2 py-0.5 text-[10px] font-medium text-rose hover:bg-rose/10 cursor-pointer"
                                 >
                                   Remove
                                 </button>
@@ -1037,8 +1142,8 @@ export function AdminProducts() {
                       })}
                     </div>
                   ) : (
-                    <div className="mt-4 flex flex-1 items-center justify-center rounded border border-dashed border-brand-border/60 bg-white/60 p-4 text-center text-xs text-brand-subtle">
-                      No video attached. Drag, upload, or paste a link above.
+                    <div className="mt-4 flex flex-1 items-center justify-center rounded border border-dashed border-brand-border/60 bg-white/60 p-6 text-center text-xs text-brand-subtle">
+                      No video attached yet. Enter a YouTube or Instagram Reel link above and click Add.
                     </div>
                   )}
                 </div>
@@ -1389,10 +1494,11 @@ export function AdminProducts() {
           <div className="mt-6 flex gap-3">
             <button
               type="button"
-              onClick={save}
-              className="rounded-sm bg-rose px-6 py-2 text-[11px] uppercase tracking-wider text-white"
+              onClick={handleSaveClick}
+              disabled={isSavingProduct}
+              className="rounded-sm bg-rose px-6 py-2 text-[11px] uppercase tracking-wider text-white disabled:opacity-50 cursor-pointer"
             >
-              {editingId ? "Update product" : "Publish product"}
+              {isSavingProduct ? "Saving..." : editingId ? "Update product" : "Publish product"}
             </button>
             <button
               type="button"
@@ -1400,7 +1506,7 @@ export function AdminProducts() {
                 setShowForm(false);
                 setEditingId(null);
               }}
-              className="border border-brand-border px-6 py-2 text-[11px] uppercase"
+              className="border border-brand-border px-6 py-2 text-[11px] uppercase cursor-pointer"
             >
               Cancel
             </button>
@@ -1452,10 +1558,14 @@ export function AdminProducts() {
                         View
                       </a>
                     )}
-                    <button type="button" className="mr-3 text-rose underline" onClick={() => startEdit(p)}>
+                    <button type="button" className="mr-3 text-rose underline cursor-pointer" onClick={() => startEdit(p)}>
                       Edit
                     </button>
-                    <button type="button" className="text-rose underline hover:text-rose-dark" onClick={() => removeProduct(p.id, p.name)}>
+                    <button
+                      type="button"
+                      className="text-rose underline hover:text-rose-dark cursor-pointer"
+                      onClick={() => setDeleteProductTarget({ id: p.id, name: p.name })}
+                    >
                       Delete
                     </button>
                   </td>
@@ -1465,6 +1575,36 @@ export function AdminProducts() {
         </table>
         {products.length === 0 && <p className="mt-6 text-sm text-brand-muted">No products yet — click Add product.</p>}
       </div>
+
+      {/* Save / Update Confirmation Modal */}
+      <AdminConfirmModal
+        isOpen={showSaveConfirm}
+        title={editingId ? "Update Product" : "Publish Product"}
+        message={`Are you sure you want to ${editingId ? "update" : "publish"} "${form.name.trim()}"?\n\nStatus: ${form.status}\nMain Category: ${form.mainCategory}\nStyle: ${form.subCategory}\nPrice: ₹${form.priceRupees || 0}\nAttached Images: ${images.length}\nAttached Videos: ${mediaItems.length}\n\n${form.status === "PUBLISHED" ? "The changes will be live immediately on the boutique storefront." : "The product will be saved as Draft."}`}
+        confirmLabel={isSavingProduct ? "Saving..." : editingId ? "Confirm Update" : "Confirm Publish"}
+        cancelLabel="Keep Editing"
+        variant="primary"
+        isLoading={isSavingProduct}
+        onConfirm={executeSave}
+        onCancel={() => setShowSaveConfirm(false)}
+      />
+
+      {/* Delete Product Confirmation Modal */}
+      <AdminConfirmModal
+        isOpen={Boolean(deleteProductTarget)}
+        title="Delete Product"
+        message={
+          deleteProductTarget
+            ? `Are you sure you want to delete "${deleteProductTarget.name}"?\n\nThis will archive and remove the product from the storefront catalog.\nExisting order history referencing this product will be preserved.`
+            : ""
+        }
+        confirmLabel={isDeletingProduct ? "Deleting..." : "Delete Product"}
+        cancelLabel="Cancel"
+        variant="danger"
+        isLoading={isDeletingProduct}
+        onConfirm={executeRemoveProduct}
+        onCancel={() => setDeleteProductTarget(null)}
+      />
     </div>
   );
 }

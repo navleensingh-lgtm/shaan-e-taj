@@ -16,6 +16,7 @@ export async function listProducts(query: Record<string, string | undefined>) {
     availability,
     inStock,
     isNewArrival,
+    sortBy,
     limit = "24",
     offset = "0",
   } = query;
@@ -57,6 +58,21 @@ export async function listProducts(query: Record<string, string | undefined>) {
   const take = Math.min(Math.max(Number(limit) || 24, 1), MAX_LIMIT);
   const skip = Math.max(Number(offset) || 0, 0);
 
+  let orderBy: Prisma.ProductOrderByWithRelationInput[] = [
+    { createdAt: "desc" },
+    { publishedAt: "desc" },
+  ];
+
+  if (sortBy === "price_asc") {
+    orderBy = [{ priceInPaise: "asc" }];
+  } else if (sortBy === "price_desc") {
+    orderBy = [{ priceInPaise: "desc" }];
+  } else if (sortBy === "featured") {
+    orderBy = [{ isNewArrival: "desc" }, { createdAt: "desc" }];
+  } else if (sortBy === "newest") {
+    orderBy = [{ publishedAt: "desc" }, { createdAt: "desc" }];
+  }
+
   const [items, total] = await Promise.all([
     prisma.product.findMany({
       where,
@@ -64,7 +80,7 @@ export async function listProducts(query: Record<string, string | undefined>) {
         images: { orderBy: { sortOrder: "asc" } },
         media: { orderBy: { sortOrder: "asc" } },
       },
-      orderBy: [{ createdAt: "desc" }, { publishedAt: "desc" }],
+      orderBy,
       take,
       skip,
     }),

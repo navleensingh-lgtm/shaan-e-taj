@@ -143,6 +143,35 @@ body {
   transform: translateY(0) scale(0.99);
 }
 
+/* Dedicated Hero Secondary Button with high contrast over video background */
+.btn-luxury-hero-secondary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(32, 22, 16, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--ivory);
+  border: 1px solid rgba(200, 169, 110, 0.65);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  user-select: none;
+  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-luxury-hero-secondary:hover:not(:disabled) {
+  background-color: rgba(46, 32, 23, 0.92);
+  border-color: rgba(200, 169, 110, 0.95);
+  color: var(--ivory);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px -2px rgba(0, 0, 0, 0.6), 0 0 16px rgba(200, 169, 110, 0.2);
+}
+
+.btn-luxury-hero-secondary:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
 /* WhatsApp Concierge Button */
 .btn-luxury-whatsapp {
   position: relative;

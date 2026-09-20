@@ -98,22 +98,24 @@ export function EditorialHero({ videoUrl, fallbackImageUrl }: EditorialHeroProps
           {siteConfig.description}
         </p>
 
-        {/* Tactile CTAs */}
-        <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 animate-editorial-reveal animation-delay-300 w-full sm:w-auto px-4 sm:px-0">
-          <Link
-            href="/new-arrivals"
-            className="btn-luxury-primary group w-full sm:w-auto rounded-xs px-8 sm:px-9 py-3.5 sm:py-4 text-center text-[10px] sm:text-[11px] uppercase tracking-[0.22em] font-medium"
-          >
-            <span>Explore Collection</span>
-            <span className="arrow-shift ml-2 text-gold">→</span>
-          </Link>
+        {/* Tactile CTAs with localized contrast protection over background video */}
+        <div className="relative mt-8 sm:mt-10 mx-auto max-w-lg p-2 sm:p-3 rounded-sm bg-radial from-espresso/60 via-espresso/25 to-transparent backdrop-blur-[2px] animate-editorial-reveal animation-delay-300">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full px-2 sm:px-0">
+            <Link
+              href="/new-arrivals"
+              className="btn-luxury-primary group w-full sm:w-auto rounded-xs px-8 sm:px-9 py-3.5 sm:py-4 text-center text-[10px] sm:text-[11px] uppercase tracking-[0.22em] font-medium shadow-md"
+            >
+              <span>Explore Collection</span>
+              <span className="arrow-shift ml-2 text-gold">→</span>
+            </Link>
 
-          <Link
-            href="/custom-stitching"
-            className="btn-luxury-outline w-full sm:w-auto rounded-xs border-gold/40 text-ivory hover:border-gold hover:bg-gold/10 px-8 sm:px-9 py-3.5 sm:py-4 text-center text-[10px] sm:text-[11px] uppercase tracking-[0.22em] font-medium"
-          >
-            Custom Stitching
-          </Link>
+            <Link
+              href="/custom-stitching"
+              className="btn-luxury-hero-secondary w-full sm:w-auto rounded-xs px-8 sm:px-9 py-3.5 sm:py-4 text-center text-[10px] sm:text-[11px] uppercase tracking-[0.22em] font-medium"
+            >
+              Custom Stitching
+            </Link>
+          </div>
         </div>
 
         {/* Subtle Heritage Tag */}

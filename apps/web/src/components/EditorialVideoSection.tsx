@@ -64,10 +64,10 @@ export function EditorialVideoSection({
           </p>
         )}
 
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+        <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
           <Link
             href={ctaHref}
-            className="btn-luxury-primary group rounded-xs px-8 py-3.5 text-[11px] uppercase tracking-[0.2em] font-medium"
+            className="btn-luxury-primary group w-full sm:w-auto rounded-xs px-8 py-3.5 text-[11px] uppercase tracking-[0.2em] font-medium text-center shadow-md"
           >
             <span>{ctaText}</span>
             <span className="arrow-shift ml-2 text-gold">→</span>
@@ -76,7 +76,7 @@ export function EditorialVideoSection({
           {secondaryCtaHref && (
             <Link
               href={secondaryCtaHref}
-              className="btn-luxury-outline rounded-xs border-gold/40 text-ivory hover:border-gold hover:bg-gold/10 px-8 py-3.5 text-[11px] uppercase tracking-[0.2em] font-medium"
+              className="btn-luxury-hero-secondary w-full sm:w-auto rounded-xs px-8 py-3.5 text-[11px] uppercase tracking-[0.2em] font-medium text-center"
             >
               {secondaryCtaText}
             </Link>

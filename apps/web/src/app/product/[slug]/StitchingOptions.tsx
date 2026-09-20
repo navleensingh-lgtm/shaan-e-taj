@@ -190,10 +190,10 @@ export function StitchingOptions({ product }: ProductOptionsProps) {
                 key={sz}
                 type="button"
                 onClick={() => setSelectedSize(sz)}
-                className={`min-w-[44px] h-10 rounded-sm border px-3 text-xs font-medium uppercase tracking-wider transition ${
+                className={`min-w-[44px] h-10 rounded-xs border px-3 text-xs font-medium uppercase tracking-wider transition-all duration-200 cursor-pointer active:scale-95 ${
                   isSelected
-                    ? "border-rose bg-rose text-white shadow-xs"
-                    : "border-brand-border bg-white text-brand-text hover:border-rose/70 hover:bg-ivory-2/40"
+                    ? "border-espresso bg-espresso text-ivory shadow-xs"
+                    : "border-brand-border bg-white text-brand-text hover:border-gold-dark hover:bg-ivory-2/60"
                 }`}
               >
                 {sz}
@@ -224,7 +224,7 @@ export function StitchingOptions({ product }: ProductOptionsProps) {
             <button
               type="button"
               onClick={() => setShowMeasurementForm(!showMeasurementForm)}
-              className="text-rose-dark hover:text-rose underline underline-offset-2 flex items-center gap-1"
+              className="text-rose-dark hover:text-espresso font-medium underline underline-offset-2 flex items-center gap-1 cursor-pointer transition-colors"
             >
               <span>{showMeasurementForm ? "Hide" : "+ Add"} Custom Body Measurements</span>
             </button>
@@ -251,13 +251,13 @@ export function StitchingOptions({ product }: ProductOptionsProps) {
 
       {/* 4. Quantity Selector */}
       <div className="mb-5">
-        <p className="text-[11px] uppercase tracking-wider text-brand-muted">Quantity</p>
+        <p className="text-[11px] uppercase tracking-wider text-brand-muted font-medium">Quantity</p>
         <div className="mt-2 flex items-center gap-3">
           <button
             type="button"
             aria-label="Decrease quantity"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="h-9 w-9 rounded-sm border border-brand-border text-lg leading-none hover:border-rose transition"
+            className="h-9 w-9 rounded-xs border border-brand-border text-lg leading-none hover:border-gold transition active:scale-90 cursor-pointer"
           >
             −
           </button>
@@ -266,7 +266,7 @@ export function StitchingOptions({ product }: ProductOptionsProps) {
             type="button"
             aria-label="Increase quantity"
             onClick={() => setQuantity((q) => q + 1)}
-            className="h-9 w-9 rounded-sm border border-brand-border text-lg leading-none hover:border-rose transition"
+            className="h-9 w-9 rounded-xs border border-brand-border text-lg leading-none hover:border-gold transition active:scale-90 cursor-pointer"
           >
             +
           </button>
@@ -274,7 +274,7 @@ export function StitchingOptions({ product }: ProductOptionsProps) {
       </div>
 
       {/* 5. Pricing Breakdown */}
-      <div className="mt-6 rounded-sm border border-brand-border bg-white p-4">
+      <div className="mt-6 rounded-xs border border-brand-border/80 bg-white p-4 shadow-2xs">
         <OrderPricingSummary
           subtotalPaise={pricing.subtotalPaise}
           stitchingPaise={pricing.stitchingPaise}
@@ -293,17 +293,18 @@ export function StitchingOptions({ product }: ProductOptionsProps) {
           type="button"
           onClick={orderNow}
           disabled={isOutOfStock}
-          className={`w-full rounded-sm py-3.5 text-[11px] uppercase tracking-[0.18em] font-medium transition ${
-            isOutOfStock
-              ? "bg-neutral-300 text-neutral-500 cursor-not-allowed"
-              : "bg-rose text-white hover:bg-rose-dark shadow-xs"
+          className={`btn-luxury-primary group w-full rounded-xs py-4 text-[11px] uppercase tracking-[0.2em] font-medium ${
+            isOutOfStock ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
-          {isOutOfStock
-            ? "Currently Out of Stock"
-            : isMadeToOrder
-            ? "Place Made-to-Order"
-            : "Order Now"}
+          <span>
+            {isOutOfStock
+              ? "Currently Out of Stock"
+              : isMadeToOrder
+              ? "Place Made-to-Order"
+              : "Order Now"}
+          </span>
+          {!isOutOfStock && <span className="arrow-shift ml-2 text-gold">→</span>}
         </button>
 
         <a
@@ -311,7 +312,7 @@ export function StitchingOptions({ product }: ProductOptionsProps) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackEvent("whatsapp_click", { productId: product.id })}
-          className="flex w-full items-center justify-center gap-2 rounded-sm bg-[#25D366] py-3 text-[11px] uppercase tracking-wider text-white shadow-xs hover:bg-[#20bd5a] transition"
+          className="btn-luxury-whatsapp flex w-full items-center justify-center gap-2 rounded-xs py-3.5 text-[11px] uppercase tracking-wider font-medium"
         >
           <span className="text-base leading-none">💬</span>
           <span>Order on WhatsApp with Concierge</span>

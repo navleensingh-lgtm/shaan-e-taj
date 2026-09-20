@@ -60,7 +60,10 @@ export async function listProducts(query: Record<string, string | undefined>) {
   const [items, total] = await Promise.all([
     prisma.product.findMany({
       where,
-      include: { images: { orderBy: { sortOrder: "asc" } } },
+      include: {
+        images: { orderBy: { sortOrder: "asc" } },
+        media: { orderBy: { sortOrder: "asc" } },
+      },
       orderBy: [{ createdAt: "desc" }, { publishedAt: "desc" }],
       take,
       skip,
@@ -124,6 +127,7 @@ export async function getRelatedProducts(product: {
       },
       include: {
         images: { orderBy: { sortOrder: "asc" } },
+        media: { orderBy: { sortOrder: "asc" } },
       },
       take: limit,
       orderBy: { createdAt: "desc" },
@@ -137,6 +141,7 @@ export async function getRelatedProducts(product: {
         },
         include: {
           images: { orderBy: { sortOrder: "asc" } },
+          media: { orderBy: { sortOrder: "asc" } },
         },
         take: limit - related.length,
         orderBy: { createdAt: "desc" },

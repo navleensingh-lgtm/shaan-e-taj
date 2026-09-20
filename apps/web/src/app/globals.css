@@ -2,26 +2,35 @@
 
 :root {
   --ivory: #faf7f2;
-  --ivory-2: #f2ece3;
-  --rose: #c9967a;
-  --rose-light: #e8c5b0;
-  --rose-dark: #a0705a;
+  --ivory-2: #f4ede3;
+  --ivory-3: #ede4d6;
+  --rose: #b87d60;
+  --rose-light: #e0b8a2;
+  --rose-dark: #8e583f;
   --gold: #c8a96e;
-  --gold-dark: #9a7a3e;
+  --gold-light: #dfcaa2;
+  --gold-dark: #8f6e30;
+  --espresso: #201610;
+  --espresso-hover: #2e2017;
   --text: #2c1f14;
-  --text-2: #6b5040;
-  --text-3: #9a8070;
-  --border: #e8ddd0;
+  --text-2: #634b3c;
+  --text-3: #947b6b;
+  --border: #e6dacb;
+  --border-dark: #ccb9a3;
 }
 
 @theme inline {
   --color-ivory: var(--ivory);
   --color-ivory-2: var(--ivory-2);
+  --color-ivory-3: var(--ivory-3);
   --color-rose: var(--rose);
   --color-rose-light: var(--rose-light);
   --color-rose-dark: var(--rose-dark);
   --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
   --color-gold-dark: var(--gold-dark);
+  --color-espresso: var(--espresso);
+  --color-espresso-hover: var(--espresso-hover);
   --color-brand-text: var(--text);
   --color-brand-muted: var(--text-2);
   --color-brand-subtle: var(--text-3);
@@ -34,12 +43,192 @@ body {
   background: var(--ivory);
   color: var(--text);
   font-family: var(--font-jost), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .serif {
   font-family: var(--font-cormorant), Georgia, serif;
 }
 
+/* ==========================================================================
+   Tactile & Royal Luxury Micro-Interactions
+   ========================================================================== */
+
+/* Primary Luxury Button */
+.btn-luxury-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--espresso);
+  color: var(--ivory);
+  border: 1px solid rgba(200, 169, 110, 0.35);
+  cursor: pointer;
+  user-select: none;
+  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-luxury-primary:hover:not(:disabled) {
+  background-color: var(--espresso-hover);
+  border-color: rgba(200, 169, 110, 0.75);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px -2px rgba(32, 22, 16, 0.22);
+}
+
+.btn-luxury-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+  box-shadow: 0 1px 4px rgba(32, 22, 16, 0.15);
+}
+
+.btn-luxury-primary:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.btn-luxury-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Secondary Rose Luxury Button */
+.btn-luxury-rose {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--rose);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  user-select: none;
+  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-luxury-rose:hover:not(:disabled) {
+  background-color: var(--rose-dark);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px -2px rgba(184, 125, 96, 0.32);
+}
+
+.btn-luxury-rose:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
+/* Outline Luxury Button */
+.btn-luxury-outline {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-dark);
+  cursor: pointer;
+  user-select: none;
+  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-luxury-outline:hover:not(:disabled) {
+  border-color: var(--gold-dark);
+  background-color: rgba(200, 169, 110, 0.08);
+  color: var(--espresso);
+  transform: translateY(-1px);
+}
+
+.btn-luxury-outline:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
+/* WhatsApp Concierge Button */
+.btn-luxury-whatsapp {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1f8a4c;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  user-select: none;
+  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-luxury-whatsapp:hover:not(:disabled) {
+  background-color: #176f3d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px -2px rgba(31, 138, 76, 0.35);
+}
+
+.btn-luxury-whatsapp:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
+/* Royal Animated Underline for Navigation Links */
+.nav-link-royal {
+  position: relative;
+  display: inline-block;
+  transition: color 240ms ease;
+}
+
+.nav-link-royal::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background-color: var(--gold);
+  transition: width 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-link-royal:hover::after,
+.nav-link-royal.active::after {
+  width: 100%;
+}
+
+/* Micro-interaction arrow shift */
+.group:hover .arrow-shift {
+  transform: translateX(4px);
+}
+
+.arrow-shift {
+  display: inline-block;
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Subtle editorial entrance reveal animation */
+@keyframes editorial-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-editorial-reveal {
+  animation: editorial-reveal 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animation-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+/* Marquee track */
 @keyframes marquee {
   0% {
     transform: translateX(0);
@@ -50,53 +239,27 @@ body {
 }
 
 .marquee-track {
-  animation: marquee 38s linear infinite;
+  animation: marquee 36s linear infinite;
 }
 
 .marquee-wrap:hover .marquee-track {
   animation-play-state: paused;
 }
 
-@keyframes hero-float {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-  50% {
-    transform: translateY(-12px) scale(1.02);
+  .btn-luxury-primary:hover,
+  .btn-luxury-rose:hover,
+  .btn-luxury-outline:hover,
+  .btn-luxury-whatsapp:hover {
+    transform: none !important;
   }
-}
-
-@keyframes hero-shimmer {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 200% 50%;
-  }
-}
-
-.hero-orb {
-  animation: hero-float 9s ease-in-out infinite;
-}
-
-.hero-orb-2 {
-  animation-delay: -3s;
-  animation-duration: 11s;
-}
-
-.hero-orb-3 {
-  animation-delay: -5s;
-  animation-duration: 13s;
-}
-
-.hero-shimmer {
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    rgba(200, 169, 110, 0.08) 50%,
-    transparent 60%
-  );
-  background-size: 200% 100%;
-  animation: hero-shimmer 12s ease-in-out infinite;
 }

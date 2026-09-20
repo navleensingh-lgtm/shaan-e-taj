@@ -25,10 +25,10 @@ export function SocialLinks({ className = "" }: { className?: string }) {
           href={s.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-sm border border-brand-border px-4 py-2 text-[11px] uppercase tracking-wider transition hover:border-rose hover:text-rose-dark"
+          className="btn-luxury-outline inline-flex items-center gap-2 rounded-xs px-4 py-2.5 text-[10px] uppercase tracking-[0.16em] font-medium"
         >
-          <span aria-hidden>{s.icon}</span>
-          {s.label}
+          <span aria-hidden className="text-xs">{s.icon}</span>
+          <span>{s.label}</span>
         </Link>
       ))}
     </div>

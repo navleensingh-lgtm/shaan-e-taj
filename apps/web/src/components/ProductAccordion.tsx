@@ -40,33 +40,45 @@ export function ProductAccordion({ sections, defaultOpenId = "description" }: Pr
               type="button"
               onClick={() => toggle(sec.id)}
               aria-expanded={isOpen}
-              className="flex w-full items-center justify-between py-3.5 text-left transition-colors hover:text-rose-dark group"
+              className="flex w-full items-center justify-between py-4 text-left transition-colors hover:text-espresso group cursor-pointer"
             >
-              <span className="serif text-lg tracking-wide uppercase font-medium">
+              <span className="serif text-lg tracking-wide uppercase font-normal text-brand-text group-hover:text-espresso">
                 {sec.title}
               </span>
-              <span className="ml-4 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-brand-border text-xs text-brand-muted transition group-hover:border-rose group-hover:text-rose">
+              <span
+                className={`ml-4 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs transition-all duration-300 ${
+                  isOpen
+                    ? "border-gold text-gold rotate-180 bg-gold/5"
+                    : "border-brand-border text-brand-subtle group-hover:border-gold group-hover:text-gold"
+                }`}
+              >
                 {isOpen ? "−" : "+"}
               </span>
             </button>
 
-            {isOpen && (
-              <div className="pb-5 pt-1 text-xs sm:text-sm leading-relaxed text-brand-muted">
-                {sec.content && (
-                  <div className="whitespace-pre-line">
-                    {sec.content}
-                  </div>
-                )}
-                {sec.items && sec.items.length > 0 && (
-                  <ul className="mt-2 space-y-1.5 list-disc list-inside">
-                    {sec.items.map((it, idx) => (
-                      <li key={idx}>{it}</li>
-                    ))}
-                  </ul>
-                )}
-                {sec.customNode}
+            <div
+              className={`grid transition-all duration-300 ease-in-out ${
+                isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+              }`}
+            >
+              <div className="overflow-hidden">
+                <div className="pb-5 pt-1 text-xs sm:text-sm leading-relaxed text-brand-muted">
+                  {sec.content && (
+                    <div className="whitespace-pre-line font-light">
+                      {sec.content}
+                    </div>
+                  )}
+                  {sec.items && sec.items.length > 0 && (
+                    <ul className="mt-2 space-y-1.5 list-disc list-inside font-light">
+                      {sec.items.map((it, idx) => (
+                        <li key={idx}>{it}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {sec.customNode}
+                </div>
               </div>
-            )}
+            </div>
           </div>
         );
       })}

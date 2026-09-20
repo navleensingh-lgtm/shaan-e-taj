@@ -14,9 +14,10 @@ export function HomeOrderCTA() {
       <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:justify-center">
         <Link
           href="/catalog"
-          className="rounded-sm bg-rose px-10 py-4 text-center text-[11px] uppercase tracking-[0.2em] text-white transition hover:bg-rose-dark"
+          className="btn-luxury-primary group rounded-xs px-10 py-4 text-center text-[11px] uppercase tracking-[0.2em] font-medium"
         >
-          Order Now
+          <span>Order Now</span>
+          <span className="arrow-shift ml-2 text-gold">→</span>
         </Link>
         <a
           href={whatsAppUrl(
@@ -24,10 +25,10 @@ export function HomeOrderCTA() {
           )}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 rounded-sm bg-[#25D366] px-10 py-4 text-[11px] uppercase tracking-[0.2em] text-white transition hover:bg-[#1ea855]"
+          className="btn-luxury-whatsapp flex items-center justify-center gap-2 rounded-xs px-10 py-4 text-[11px] uppercase tracking-[0.2em] font-medium"
         >
-          <span className="text-lg leading-none">+</span>
-          Order on WhatsApp
+          <span className="text-base leading-none">💬</span>
+          <span>Order on WhatsApp</span>
         </a>
       </div>
     </div>

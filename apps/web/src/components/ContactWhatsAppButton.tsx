@@ -14,9 +14,10 @@ export function ContactWhatsAppButton() {
     <button
       type="button"
       onClick={() => window.open(href, "_blank")}
-      className="w-full rounded-sm bg-[#25D366] px-6 py-4 text-[11px] uppercase tracking-wider text-white"
+      className="btn-luxury-whatsapp w-full rounded-xs py-4 text-[11px] uppercase tracking-[0.2em] font-medium"
     >
-      Message on WhatsApp
+      <span className="mr-2 text-base leading-none">💬</span>
+      <span>Message on WhatsApp</span>
     </button>
   );
 }

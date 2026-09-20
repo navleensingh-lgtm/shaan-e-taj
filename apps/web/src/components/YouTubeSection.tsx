@@ -35,22 +35,22 @@ export async function YouTubeSection() {
               allowFullScreen
             />
           </div>
-          <div className="mt-4 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-wrap gap-3">
             <a
               href={latest.watchUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-sm bg-rose px-5 py-2 text-[11px] uppercase tracking-wider text-white"
+              className="btn-luxury-primary rounded-xs px-6 py-2.5 text-[10px] uppercase tracking-[0.16em] font-medium"
             >
-              Watch on YouTube
+              Watch on YouTube ↗
             </a>
             <a
               href={youtube}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-sm border border-brand-border px-5 py-2 text-[11px] uppercase tracking-wider"
+              className="btn-luxury-outline rounded-xs px-6 py-2.5 text-[10px] uppercase tracking-[0.16em] font-medium"
             >
-              All videos
+              All Videos
             </a>
           </div>
         </div>

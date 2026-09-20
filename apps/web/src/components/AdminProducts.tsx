@@ -849,58 +849,28 @@ export function AdminProducts() {
                 {/* RIGHT COLUMN: Product Video */}
                 <div className="flex flex-col rounded-sm border border-brand-border/70 bg-ivory/30 p-4">
                   <div className="flex items-center justify-between border-b border-brand-border/40 pb-2">
-                    <h3 className="text-sm font-semibold uppercase tracking-wider text-brand-text">
-                      Product Video {mediaItems.length > 0 && `(${mediaItems.length})`}
-                    </h3>
-                    <span className="text-[11px] text-brand-muted">Max 1 GB</span>
+                    <div>
+                      <h3 className="text-sm font-semibold uppercase tracking-wider text-brand-text">
+                        Product Video {mediaItems.length > 0 && `(${mediaItems.length})`}
+                      </h3>
+                      <p className="mt-0.5 text-[10px] text-brand-muted">
+                        Use an external YouTube or Instagram video link. Videos are not uploaded to the server.
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Video Drag & Drop / Click Upload Area */}
-                  <label
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setDragOverVideo(true);
-                    }}
-                    onDragLeave={() => setDragOverVideo(false)}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setDragOverVideo(false);
-                      const file = e.dataTransfer.files?.[0];
-                      if (file) handleVideoFile(file);
-                    }}
-                    className={`mt-3 flex flex-col items-center justify-center rounded border-2 border-dashed p-4 text-center cursor-pointer transition-colors ${
-                      dragOverVideo
-                        ? "border-rose bg-rose/10 text-rose"
-                        : "border-brand-border bg-white hover:border-rose/60 hover:bg-ivory-2/50 text-brand-muted"
-                    }`}
-                  >
-                    <input
-                      type="file"
-                      accept="video/mp4,video/webm,video/quicktime"
-                      disabled={uploading}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleVideoFile(file);
-                        e.target.value = "";
-                      }}
-                      className="hidden"
-                    />
-                    <svg className="h-7 w-7 text-rose mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                    <p className="text-xs font-medium text-brand-text">Drag &amp; drop video here</p>
-                    <p className="text-[11px] text-brand-subtle mt-0.5">or <span className="text-rose underline font-semibold">Click to upload</span></p>
-                    <p className="text-[10px] text-brand-subtle mt-1">MP4, WebM, MOV &bull; Up to 1000 MB (1 GB)</p>
-                  </label>
-
-                  {/* Video URL Inputs (YouTube / Instagram Reel / Direct URL) */}
-                  <div className="mt-3 rounded border border-brand-border/70 bg-white p-3 space-y-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-text">Or Add Video Link</p>
-
+                  {/* YouTube Video / Short Input */}
+                  <div className="mt-3 rounded border border-brand-border/70 bg-white p-3 space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-brand-text flex items-center gap-1.5">
+                        <span className="text-rose">▶</span> YouTube Video / Short
+                      </label>
+                      <span className="text-[9px] text-brand-subtle">Watch, Shorts, youtu.be</span>
+                    </div>
                     <div className="flex gap-2">
                       <input
-                        className="min-w-0 flex-1 border border-brand-border px-2.5 py-1 text-xs focus:border-rose focus:outline-none"
-                        placeholder="YouTube video or Shorts URL"
+                        className="min-w-0 flex-1 border border-brand-border px-2.5 py-1.5 text-xs focus:border-rose focus:outline-none"
+                        placeholder="https://www.youtube.com/shorts/... or /watch?v=..."
                         value={youtubeInput}
                         onChange={(e) => setYoutubeInput(e.target.value)}
                         onKeyDown={(e) => {
@@ -913,16 +883,25 @@ export function AdminProducts() {
                       <button
                         type="button"
                         onClick={addYoutube}
-                        className="rounded-sm border border-brand-border bg-ivory-2 px-3 py-1 text-xs font-medium uppercase tracking-wider hover:bg-ivory shrink-0"
+                        className="btn-luxury-primary rounded-xs px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider shrink-0"
                       >
-                        + YouTube
+                        + Add YouTube
                       </button>
                     </div>
+                  </div>
 
+                  {/* Instagram Reel Input */}
+                  <div className="mt-3 rounded border border-brand-border/70 bg-white p-3 space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-brand-text flex items-center gap-1.5">
+                        <span className="text-rose">📸</span> Instagram Reel
+                      </label>
+                      <span className="text-[9px] text-brand-subtle">instagram.com/reel/…</span>
+                    </div>
                     <div className="flex gap-2">
                       <input
-                        className="min-w-0 flex-1 border border-brand-border px-2.5 py-1 text-xs focus:border-rose focus:outline-none"
-                        placeholder="Instagram Reel or Post URL"
+                        className="min-w-0 flex-1 border border-brand-border px-2.5 py-1.5 text-xs focus:border-rose focus:outline-none"
+                        placeholder="https://www.instagram.com/reel/..."
                         value={instagramInput}
                         onChange={(e) => setInstagramInput(e.target.value)}
                         onKeyDown={(e) => {
@@ -935,16 +914,24 @@ export function AdminProducts() {
                       <button
                         type="button"
                         onClick={addInstagram}
-                        className="rounded-sm border border-brand-border bg-ivory-2 px-3 py-1 text-xs font-medium uppercase tracking-wider hover:bg-ivory shrink-0"
+                        className="btn-luxury-primary rounded-xs px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider shrink-0"
                       >
-                        + Reel
+                        + Add Reel
                       </button>
                     </div>
+                  </div>
 
+                  {/* Direct Video File Upload or Direct MP4 Link (Collapsible/Optional) */}
+                  <div className="mt-3 rounded border border-brand-border/60 bg-ivory-2/40 p-2.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-subtle">
+                        Direct Video URL or Local MP4 (Optional)
+                      </span>
+                    </div>
                     <div className="flex gap-2">
                       <input
-                        className="min-w-0 flex-1 border border-brand-border px-2.5 py-1 text-xs focus:border-rose focus:outline-none"
-                        placeholder="Direct video URL (https://…/video.mp4)"
+                        className="min-w-0 flex-1 border border-brand-border bg-white px-2.5 py-1 text-xs focus:border-rose focus:outline-none"
+                        placeholder="Direct video link: https://…/video.mp4"
                         value={mediaUrlInput}
                         onChange={(e) => setMediaUrlInput(e.target.value)}
                         onKeyDown={(e) => {
@@ -957,7 +944,7 @@ export function AdminProducts() {
                       <button
                         type="button"
                         onClick={addMediaUrl}
-                        className="rounded-sm border border-brand-border bg-ivory-2 px-3 py-1 text-xs font-medium uppercase tracking-wider hover:bg-ivory shrink-0"
+                        className="rounded-xs border border-brand-border bg-white px-3 py-1 text-xs font-medium uppercase tracking-wider hover:bg-ivory shrink-0"
                       >
                         + URL
                       </button>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { siteConfig } from "@/lib/site-config";
+import { videoEmbed, parseYouTube } from "@/lib/product-media";
 import { ViewportVideo } from "./ViewportVideo";
 
 interface EditorialHeroProps {
@@ -10,11 +11,28 @@ interface EditorialHeroProps {
 }
 
 export function EditorialHero({ videoUrl, fallbackImageUrl }: EditorialHeroProps) {
+  const ytParsed = videoUrl ? parseYouTube(videoUrl) : null;
+  const isYouTube = Boolean(ytParsed?.videoId);
+  const ytBgSrc = ytParsed?.videoId
+    ? `https://www.youtube-nocookie.com/embed/${ytParsed.videoId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${ytParsed.videoId}&playsinline=1&modestbranding=1&disablekb=1&fs=0`
+    : null;
+
   return (
     <section className="relative flex min-h-[calc(100vh-68px)] items-center justify-center overflow-hidden bg-espresso text-ivory">
       {/* Background Media */}
-      <div className="absolute inset-0 z-0">
-        {videoUrl ? (
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        {isYouTube && ytBgSrc ? (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            {/* 16:9 responsive scale to cover the container while cropping chrome */}
+            <iframe
+              src={ytBgSrc}
+              title="Editorial Campaign Background"
+              className="pointer-events-none absolute min-h-[120%] min-w-[120%] w-[150vw] h-[150vh] object-cover opacity-45 filter brightness-95 contrast-105 border-0"
+              allow="autoplay; encrypted-media"
+              tabIndex={-1}
+            />
+          </div>
+        ) : videoUrl ? (
           <ViewportVideo
             src={videoUrl}
             poster={fallbackImageUrl}

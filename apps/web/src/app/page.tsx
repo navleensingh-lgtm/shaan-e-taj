@@ -59,6 +59,9 @@ export default async function HomePage() {
     }
   }
 
+  // Allow explicit hero video from store settings (supports YouTube & direct MP4), or fallback to product media
+  const heroVideo = storeSettings.heroVideoUrl || campaignVideoUrl;
+
   return (
     <>
       {/* 1. Refined Top Marquee */}
@@ -66,7 +69,7 @@ export default async function HomePage() {
 
       {/* 2. Cinematic Campaign Hero */}
       <EditorialHero
-        videoUrl={campaignVideoUrl}
+        videoUrl={heroVideo}
         fallbackImageUrl={heroFallbackImage}
       />
 

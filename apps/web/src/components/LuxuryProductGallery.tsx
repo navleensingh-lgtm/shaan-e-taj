@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { videoEmbed } from "@/lib/product-media";
+import { videoEmbed, parseYouTube } from "@/lib/product-media";
 
 export type GalleryImage = {
   url: string;
@@ -47,6 +47,7 @@ export function LuxuryProductGallery({
   const [activeIndex, setActiveIndex] = useState(primaryIndex >= 0 ? primaryIndex : 0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [videoPlayState, setVideoPlayState] = useState<Record<number, boolean>>({});
 
   if (!slides.length) {
     return (
@@ -108,9 +109,12 @@ export function LuxuryProductGallery({
             />
           </div>
         ) : (
-          <div className="h-full w-full bg-black">
+          <div className="relative h-full w-full bg-black">
             {(() => {
               const embed = videoEmbed(currentSlide.url);
+              const ytInfo = parseYouTube(currentSlide.url);
+              const isPlaying = videoPlayState[activeIndex];
+
               if (embed.type === "video") {
                 return (
                   <video
@@ -122,6 +126,7 @@ export function LuxuryProductGallery({
                   />
                 );
               }
+
               if (embed.type === "instagram") {
                 return (
                   <div className="flex h-full flex-col">
@@ -136,16 +141,43 @@ export function LuxuryProductGallery({
                       href={embed.canonicalUrl ?? currentSlide.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bg-black/80 py-2 text-center text-[10px] uppercase tracking-wider text-white/80 hover:text-white"
+                      className="bg-black/80 py-2.5 text-center text-[10px] uppercase tracking-wider text-white/90 hover:text-white"
                     >
-                      Open on Instagram ↗
+                      Watch on Instagram ↗
                     </a>
                   </div>
                 );
               }
+
+              // YouTube Video / Short: Facade / Lazy player
+              if (!isPlaying && ytInfo.thumbnailUrl) {
+                return (
+                  <div
+                    className="relative h-full w-full cursor-pointer bg-black"
+                    onClick={() => setVideoPlayState((prev) => ({ ...prev, [activeIndex]: true }))}
+                  >
+                    <Image
+                      src={ytInfo.thumbnailUrl}
+                      alt={`${productName} video thumbnail`}
+                      fill
+                      className="object-cover opacity-90 transition-opacity hover:opacity-100"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 transition hover:bg-black/20">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-rose/90 text-white shadow-lg transition transform hover:scale-105">
+                        <span className="text-xl ml-1">▶</span>
+                      </div>
+                    </div>
+                    <div className="absolute bottom-3 inset-x-3 flex justify-between items-center text-[10px] uppercase tracking-wider text-white/80 bg-black/60 px-3 py-1.5 rounded-xs backdrop-blur-xs">
+                      <span>{ytInfo.isShort ? "YouTube Short" : "YouTube Video"}</span>
+                      <span className="text-gold">Click to play</span>
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <iframe
-                  src={embed.src}
+                  src={`${embed.src}${embed.src.includes("?") ? "&" : "?"}autoplay=1`}
                   title={`${productName} video`}
                   className="h-full w-full border-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -165,7 +197,7 @@ export function LuxuryProductGallery({
 
         {/* Media Kind Badge */}
         {currentSlide.type === "video" && (
-          <div className="absolute top-3 left-3 flex items-center gap-1 rounded bg-black/70 px-2 py-0.5 text-[10px] uppercase tracking-wider text-white backdrop-blur-xs">
+          <div className="absolute top-3 left-3 flex items-center gap-1 rounded bg-black/70 px-2.5 py-1 text-[10px] uppercase tracking-wider text-white backdrop-blur-xs border border-white/20">
             <span>▶ Video</span>
           </div>
         )}
@@ -208,6 +240,8 @@ export function LuxuryProductGallery({
         <div className="flex gap-2 overflow-x-auto pb-1 pt-0.5">
           {slides.map((slide, idx) => {
             const isSelected = idx === activeIndex;
+            const ytInfo = slide.type === "video" ? parseYouTube(slide.url) : null;
+
             return (
               <button
                 key={idx}
@@ -232,6 +266,19 @@ export function LuxuryProductGallery({
                     unoptimized={slide.url.startsWith("data:")}
                     sizes="80px"
                   />
+                ) : ytInfo?.thumbnailUrl ? (
+                  <div className="relative h-full w-full bg-black">
+                    <Image
+                      src={ytInfo.thumbnailUrl}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="80px"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
+                      <span className="text-xs">▶</span>
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-neutral-900 text-white">
                     <span className="text-xs">▶</span>
@@ -245,3 +292,4 @@ export function LuxuryProductGallery({
     </div>
   );
 }
+

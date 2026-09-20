@@ -12,6 +12,7 @@ import { AddressFields } from "@/components/AddressFields";
 import { OrderPricingSummary } from "@/components/OrderPricingSummary";
 import { StitchingSelector } from "@/components/StitchingSelector";
 import { emptyAddress, validateAddress, type AddressInput } from "@/lib/checkout-address";
+import { cartCheckoutWhatsAppUrl } from "@/lib/whatsapp";
 
 declare global {
   interface Window {
@@ -85,6 +86,7 @@ export default function CheckoutPage() {
 
     setLoading(true);
     try {
+      // Create pending order in database for order tracking & admin visibility
       const checkout = await apiFetch("/orders/checkout", {
         method: "POST",
         body: JSON.stringify({
@@ -97,65 +99,102 @@ export default function CheckoutPage() {
         }),
       });
 
-      if (checkout.mock || !checkout.razorpayKeyId) {
-        await apiFetch("/orders/verify-payment", {
-          method: "POST",
-          body: JSON.stringify({
-            orderId: checkout.orderId,
-            razorpayOrderId: checkout.razorpayOrderId,
-            razorpayPaymentId: `mock_${Date.now()}`,
-            razorpaySignature: "mock",
-          }),
-        });
-        clear();
-        router.push("/orders");
-        return;
-      }
+      const fullAddressStr = [
+        shipping.line1,
+        shipping.line2,
+        shipping.city,
+        shipping.state,
+        shipping.pincode,
+      ]
+        .filter(Boolean)
+        .join(", ");
 
-      await new Promise<void>((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = "https://checkout.razorpay.com/v1/checkout.js";
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error("Razorpay failed to load"));
-        document.body.appendChild(script);
+      const waUrl = cartCheckoutWhatsAppUrl({
+        orderNumber: checkout.orderNumber,
+        items: items.map((i) => ({
+          name: i.name,
+          quantity: i.quantity,
+          priceInPaise: i.priceInPaise,
+        })),
+        stitchingType,
+        subtotalPaise: pricing.subtotalPaise,
+        stitchingPaise: pricing.stitchingPaise,
+        shippingPaise: pricing.shippingPaise,
+        totalPaise: pricing.totalPaise,
+        customerName: shipping.fullName,
+        customerPhone: shipping.phone,
+        shippingAddress: fullAddressStr,
+        notes: orderNotes.trim() || undefined,
       });
 
-      const rzp = new window.Razorpay!({
-        key: checkout.razorpayKeyId,
-        amount: checkout.amountPaise,
-        currency: "INR",
-        name: "Shaan-e-Taj",
-        description: checkout.orderNumber,
-        order_id: checkout.razorpayOrderId,
-        handler: async (response: {
-          razorpay_order_id: string;
-          razorpay_payment_id: string;
-          razorpay_signature: string;
-        }) => {
-          await apiFetch("/orders/verify-payment", {
-            method: "POST",
-            body: JSON.stringify({
-              orderId: checkout.orderId,
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-            }),
-          });
-          clear();
-          router.push("/orders");
-        },
-        prefill: {
-          name: shipping.fullName,
-          email: shipping.email,
-          contact: shipping.phone.replace(/\D/g, "").slice(-10),
-        },
-      });
-      rzp.open();
+      clear();
+      // Redirect seamlessly to WhatsApp with prefilled order
+      window.location.href = waUrl;
+      return;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Checkout failed");
     } finally {
       setLoading(false);
     }
+  }
+
+  // --- TEMPORARILY DISABLED RAZORPAY PAYMENT HANDLER (PRESERVED INTACT FOR FUTURE RE-ENABLING) ---
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async function payWithRazorpay(checkout: any) {
+    if (checkout.mock || !checkout.razorpayKeyId) {
+      await apiFetch("/orders/verify-payment", {
+        method: "POST",
+        body: JSON.stringify({
+          orderId: checkout.orderId,
+          razorpayOrderId: checkout.razorpayOrderId,
+          razorpayPaymentId: `mock_${Date.now()}`,
+          razorpaySignature: "mock",
+        }),
+      });
+      clear();
+      router.push("/orders");
+      return;
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Razorpay failed to load"));
+      document.body.appendChild(script);
+    });
+
+    const rzp = new window.Razorpay!({
+      key: checkout.razorpayKeyId,
+      amount: checkout.amountPaise,
+      currency: "INR",
+      name: "Shaan-e-Taj",
+      description: checkout.orderNumber,
+      order_id: checkout.razorpayOrderId,
+      handler: async (response: {
+        razorpay_order_id: string;
+        razorpay_payment_id: string;
+        razorpay_signature: string;
+      }) => {
+        await apiFetch("/orders/verify-payment", {
+          method: "POST",
+          body: JSON.stringify({
+            orderId: checkout.orderId,
+            razorpayOrderId: response.razorpay_order_id,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpaySignature: response.razorpay_signature,
+          }),
+        });
+        clear();
+        router.push("/orders");
+      },
+      prefill: {
+        name: shipping.fullName,
+        email: shipping.email,
+        contact: shipping.phone.replace(/\D/g, "").slice(-10),
+      },
+    });
+    rzp.open();
   }
 
   return (
@@ -233,14 +272,21 @@ export default function CheckoutPage() {
 
         {error && <p className="text-sm text-rose">{error}</p>}
 
+        {/* Temporary WhatsApp Order button replacing Razorpay (Razorpay implementation preserved intact above) */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-sm bg-rose py-4 text-[11px] uppercase tracking-wider text-white disabled:opacity-60"
+          className="btn-luxury-whatsapp w-full rounded-xs py-4 text-[11px] uppercase tracking-[0.18em] font-medium shadow-xs disabled:opacity-60 flex items-center justify-center gap-2"
         >
-          {loading ? "Processing…" : "Pay with Razorpay"}
+          <span className="text-base leading-none">💬</span>
+          <span>{loading ? "Preparing Order…" : "Order on WhatsApp"}</span>
         </button>
+
+        <p className="text-center text-[10px] text-brand-subtle uppercase tracking-wider">
+          Direct boutique confirmation with our concierge in Jalandhar
+        </p>
       </form>
     </section>
   );
 }
+

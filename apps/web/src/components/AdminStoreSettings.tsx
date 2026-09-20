@@ -19,6 +19,7 @@ type Settings = {
   storeHoursSunday: string;
   youtubeUrl: string;
   instagramUrl: string;
+  heroVideoUrl?: string | null;
   autoPostInstagram: boolean;
   autoPostFacebook: boolean;
   watermarkEnabled: boolean;
@@ -111,6 +112,10 @@ export function AdminStoreSettings() {
           {field("Sunday hours", "storeHoursSunday")}
           {field("YouTube channel URL", "youtubeUrl")}
           {field("Instagram URL", "instagramUrl")}
+          {field("Hero background video URL", "heroVideoUrl", {
+            placeholder: "https://www.youtube.com/watch?v=... or .mp4 URL",
+            hint: "Cinematic muted background video on homepage hero",
+          })}
         </div>
       </div>
 

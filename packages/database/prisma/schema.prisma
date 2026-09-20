@@ -346,5 +346,7 @@ model SiteSettings {
   storeHoursSunday      String  @default("Sunday: By appointment")
   youtubeUrl            String  @default("https://www.youtube.com/@Tajfashionjalandhar")
   instagramUrl          String  @default("https://www.instagram.com/shaan_e_taj/")
+  heroVideoUrl          String?
   masterSizeGuide       Json?
 }
+

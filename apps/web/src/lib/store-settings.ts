@@ -14,6 +14,7 @@ export type PublicStoreSettings = PricingSettings & {
   storeHoursSunday: string;
   youtubeUrl: string;
   instagramUrl: string;
+  heroVideoUrl?: string | null;
   semiStitchChargePaise: number;
 };
 
@@ -30,6 +31,7 @@ const defaults: PublicStoreSettings = {
   storeHoursSunday: siteConfig.hours.sunday,
   youtubeUrl: siteConfig.social.youtube,
   instagramUrl: siteConfig.social.instagram,
+  heroVideoUrl: null,
   semiStitchChargePaise: 50000,
   fullStitchChargePaise: 80000,
   shippingFree: true,
@@ -52,6 +54,7 @@ export async function getPublicStoreSettings(): Promise<PublicStoreSettings> {
       storeHoursSunday: row.storeHoursSunday || defaults.storeHoursSunday,
       youtubeUrl: row.youtubeUrl || defaults.youtubeUrl,
       instagramUrl: row.instagramUrl || defaults.instagramUrl,
+      heroVideoUrl: row.heroVideoUrl || null,
       semiStitchChargePaise: row.semiStitchChargePaise,
       fullStitchChargePaise: row.fullStitchChargePaise,
       shippingFree: row.shippingFree ?? true,

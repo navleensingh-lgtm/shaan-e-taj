@@ -107,3 +107,53 @@ export function contextualWhatsAppUrl(
 
   return whatsAppUrl(lines.join("\n"));
 }
+
+export type CartCheckoutWhatsAppInput = {
+  orderNumber?: string;
+  items: { name: string; quantity: number; priceInPaise: number }[];
+  stitchingType?: string;
+  subtotalPaise: number;
+  stitchingPaise?: number;
+  shippingPaise?: number;
+  totalPaise: number;
+  customerName?: string;
+  customerPhone?: string;
+  shippingAddress?: string;
+  notes?: string;
+};
+
+export function cartCheckoutWhatsAppUrl(data: CartCheckoutWhatsAppInput): string {
+  const itemsText = data.items
+    .map(
+      (it, idx) =>
+        `${idx + 1}. ${it.name} (Qty: ${it.quantity}) - ₹${(
+          (it.priceInPaise * it.quantity) /
+          100
+        ).toLocaleString("en-IN")}`
+    )
+    .join("\n");
+
+  const lines = [
+    "Hello Shaan-e-Taj, I would like to complete my order on WhatsApp:",
+    "",
+    data.orderNumber ? `Order Ref: ${data.orderNumber}` : "",
+    data.customerName ? `Customer Name: ${data.customerName}` : "",
+    data.customerPhone ? `Contact Phone: ${data.customerPhone}` : "",
+    "",
+    "Items Ordered:",
+    itemsText,
+    "",
+    data.stitchingType
+      ? `Stitching: ${
+          data.stitchingType === "FULLY_STITCHED" ? "Fully Stitched" : "Unstitched"
+        }`
+      : "",
+    `Total Amount: ₹${(data.totalPaise / 100).toLocaleString("en-IN")}`,
+    data.shippingAddress ? `Delivery Address: ${data.shippingAddress}` : "",
+    data.notes ? `Special Notes: ${data.notes}` : "",
+    "",
+    "Kindly assist me with completing this order and dispatch timeline.",
+  ].filter(Boolean);
+
+  return whatsAppUrl(lines.join("\n"));
+}

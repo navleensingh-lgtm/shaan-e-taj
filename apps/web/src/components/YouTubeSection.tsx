@@ -29,10 +29,11 @@ export async function YouTubeSection() {
           <div className="relative mt-4 aspect-video w-full overflow-hidden rounded-sm bg-brand-text shadow-soft">
             <iframe
               title={latest.title}
-              src={latest.watchUrl?.includes("/watch") ? `https://www.youtube.com/embed/${latest.videoId}?rel=0` : `https://www.youtube.com/embed/${latest.videoId}?rel=0`}
-              className="absolute inset-0 h-full w-full"
+              src={`https://www.youtube-nocookie.com/embed/${latest.videoId}?rel=0`}
+              className="absolute inset-0 h-full w-full border-0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
+              loading="lazy"
             />
           </div>
           <div className="mt-5 flex flex-wrap gap-3">

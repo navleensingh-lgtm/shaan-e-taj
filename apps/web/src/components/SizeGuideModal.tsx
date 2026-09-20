@@ -340,63 +340,83 @@ export function SizeGuideModal({
           )}
 
           {/* 7. How To Measure Section with Illustrated Figure */}
-          <div className="mt-10 rounded-sm border border-brand-border bg-white p-5 sm:p-7 shadow-2xs">
-            <div className="border-b border-brand-border/60 pb-3">
-              <h3 className="serif text-2xl text-brand-text">How to Measure</h3>
-              <p className="mt-0.5 text-xs text-brand-muted">
-                Follow these simple steps with a flexible measuring tape for optimal fit accuracy:
+          <div className="mt-10 rounded-sm border border-brand-border bg-white p-6 sm:p-8 shadow-2xs">
+            <div className="border-b border-brand-border/70 pb-4">
+              <div className="flex items-center gap-2">
+                <span className="h-px w-6 bg-gold" />
+                <span className="text-[10px] uppercase tracking-[0.25em] text-rose-dark font-medium">Boutique Fit Guide</span>
+              </div>
+              <h3 className="serif mt-1 text-2xl sm:text-3xl text-brand-text">How to Measure</h3>
+              <p className="mt-1 text-xs sm:text-sm text-brand-muted leading-relaxed font-light">
+                Follow these simple steps with a flexible measuring tape for optimal fit accuracy.
               </p>
             </div>
 
-            <div className="mt-6 grid gap-6 md:grid-cols-12 items-center">
-              {/* Illustrated Figure Silhouette */}
-              <div className="md:col-span-4 flex flex-col items-center justify-center rounded-sm bg-ivory-2 p-5 border border-brand-border/60">
-                <svg
-                  className="h-64 w-32 text-rose-dark"
-                  viewBox="0 0 100 220"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  {/* Head & Neck */}
-                  <circle cx="50" cy="22" r="14" strokeWidth="1.5" />
-                  <path d="M47 36v6M53 36v6" />
-                  {/* Shoulders & Arms */}
-                  <path d="M30 50h40l8 35-4 4-8-30H34l-8 30-4-4 8-35z" />
-                  {/* Bustline Guide */}
-                  <line x1="28" y1="62" x2="72" y2="62" stroke="#c9967a" strokeDasharray="3 2" strokeWidth="1.5" />
-                  <circle cx="50" cy="62" r="1.5" fill="#c9967a" />
-                  <text x="74" y="65" fill="#a0705a" fontSize="7" fontFamily="sans-serif">Bust</text>
-                  {/* Torso & Natural Waist */}
-                  <path d="M34 50c0 15-4 28-2 42 2 12 8 20 18 20s16-8 18-20c2-14-2-27-2-42" />
-                  <line x1="33" y1="84" x2="67" y2="84" stroke="#c8a96e" strokeDasharray="3 2" strokeWidth="1.5" />
-                  <text x="70" y="87" fill="#9a7a3e" fontSize="7" fontFamily="sans-serif">Waist</text>
-                  {/* Drop Waist */}
-                  <line x1="32" y1="98" x2="68" y2="98" stroke="#c9967a" strokeDasharray="3 2" strokeWidth="1.5" />
-                  <text x="70" y="101" fill="#a0705a" fontSize="6.5" fontFamily="sans-serif">Drop W.</text>
-                  {/* Hips */}
-                  <line x1="30" y1="112" x2="70" y2="112" stroke="#c8a96e" strokeDasharray="3 2" strokeWidth="1.5" />
-                  <text x="72" y="115" fill="#9a7a3e" fontSize="7" fontFamily="sans-serif">Hips</text>
-                  {/* Skirt / Pants Flare */}
-                  <path d="M32 112L20 205h60l-12-93" />
-                  {/* Height ruler */}
-                  <line x1="10" y1="10" x2="10" y2="210" stroke="#9a8070" strokeWidth="1" strokeDasharray="4 2" />
-                  <path d="M7 10h6M7 210h6" stroke="#9a8070" strokeWidth="1" />
-                  <text x="4" y="110" fill="#9a8070" fontSize="7" transform="rotate(-90 4 110)" textAnchor="middle">Full Height</text>
-                </svg>
-                <p className="mt-2 text-[10px] uppercase tracking-wider text-brand-subtle">
-                  Tape level &amp; comfortably snug
-                </p>
+            <div className="mt-8 grid gap-8 lg:grid-cols-12 items-start">
+              {/* Illustrated Figure Card - Strictly Contained */}
+              <div className="lg:col-span-4 flex flex-col items-center justify-center rounded-sm bg-ivory-2/70 p-6 border border-brand-border/80 shadow-2xs">
+                <div className="relative flex w-full items-center justify-center py-2">
+                  <svg
+                    className="h-72 w-36 text-rose-dark drop-shadow-xs"
+                    viewBox="0 0 100 220"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    aria-label="Measurement points guide illustration"
+                  >
+                    {/* Head & Neck */}
+                    <circle cx="50" cy="22" r="14" strokeWidth="1.5" />
+                    <path d="M47 36v6M53 36v6" />
+                    {/* Shoulders & Arms */}
+                    <path d="M30 50h40l8 35-4 4-8-30H34l-8 30-4-4 8-35z" />
+                    {/* Bustline Guide */}
+                    <line x1="28" y1="62" x2="72" y2="62" stroke="#b87d60" strokeDasharray="3 2" strokeWidth="1.5" />
+                    <circle cx="50" cy="62" r="2" fill="#b87d60" />
+                    <text x="74" y="65" fill="#8e583f" fontSize="7" fontWeight="bold" fontFamily="sans-serif">Bust</text>
+                    {/* Torso & Natural Waist */}
+                    <path d="M34 50c0 15-4 28-2 42 2 12 8 20 18 20s16-8 18-20c2-14-2-27-2-42" />
+                    <line x1="33" y1="84" x2="67" y2="84" stroke="#c8a96e" strokeDasharray="3 2" strokeWidth="1.5" />
+                    <text x="70" y="87" fill="#8f6e30" fontSize="7" fontWeight="bold" fontFamily="sans-serif">Waist</text>
+                    {/* Drop Waist */}
+                    <line x1="32" y1="98" x2="68" y2="98" stroke="#b87d60" strokeDasharray="3 2" strokeWidth="1.5" />
+                    <text x="70" y="101" fill="#8e583f" fontSize="6.5" fontWeight="bold" fontFamily="sans-serif">Drop W.</text>
+                    {/* Hips */}
+                    <line x1="30" y1="112" x2="70" y2="112" stroke="#c8a96e" strokeDasharray="3 2" strokeWidth="1.5" />
+                    <text x="72" y="115" fill="#8f6e30" fontSize="7" fontWeight="bold" fontFamily="sans-serif">Hips</text>
+                    {/* Skirt / Pants Flare */}
+                    <path d="M32 112L20 205h60l-12-93" />
+                    {/* Height ruler */}
+                    <line x1="12" y1="12" x2="12" y2="208" stroke="#8e583f" strokeWidth="1.2" strokeDasharray="4 2" />
+                    <path d="M9 12h6M9 208h6" stroke="#8e583f" strokeWidth="1.2" />
+                    <text x="6" y="110" fill="#8e583f" fontSize="7" fontWeight="bold" transform="rotate(-90 6 110)" textAnchor="middle">Full Height</text>
+                  </svg>
+                </div>
+                <div className="mt-3 w-full rounded-xs bg-white/90 p-2 text-center border border-brand-border/60">
+                  <p className="text-[10px] uppercase tracking-wider text-brand-text font-medium">
+                    Tape level &amp; comfortably snug
+                  </p>
+                  <p className="text-[9px] text-brand-subtle mt-0.5">
+                    Stand naturally with feet together
+                  </p>
+                </div>
               </div>
 
-              {/* Instructions List */}
-              <div className="md:col-span-8 grid gap-3 sm:grid-cols-2">
-                {guide.howToMeasure?.map((item) => (
-                  <div key={item.label} className="rounded border border-brand-border/60 bg-ivory/40 p-2.5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-brand-text">
-                      {item.label}
-                    </p>
-                    <p className="mt-1 text-xs text-brand-muted leading-relaxed">
+              {/* Numbered Instructions List */}
+              <div className="lg:col-span-8 grid gap-3 sm:grid-cols-2">
+                {guide.howToMeasure?.map((item, idx) => (
+                  <div
+                    key={item.label}
+                    className="rounded-xs border border-brand-border/70 bg-ivory/40 p-3.5 transition-colors hover:border-gold/60 hover:bg-white"
+                  >
+                    <div className="flex items-baseline gap-2">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose/15 text-[10px] font-semibold text-rose-dark font-mono">
+                        {idx + 1}
+                      </span>
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-text">
+                        {item.label}
+                      </h4>
+                    </div>
+                    <p className="mt-1.5 pl-7 text-xs text-brand-muted leading-relaxed font-light">
                       {item.instruction}
                     </p>
                   </div>
